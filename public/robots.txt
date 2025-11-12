@@ -1,0 +1,17 @@
+# robots.txt for My Stables Application
+
+# Allow all crawlers to access public pages
+User-agent: *
+Allow: /
+Allow: /auth/login
+Allow: /auth/register
+
+# Disallow private/authenticated pages
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://yourdomain.com/sitemap.xml
