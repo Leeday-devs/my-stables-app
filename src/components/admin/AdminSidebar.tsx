@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  CalendarDays
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
+  { name: 'Sand School', href: '/admin/sand-school', icon: CalendarDays },
   { name: 'Revenue', href: '/admin/revenue', icon: DollarSign },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]

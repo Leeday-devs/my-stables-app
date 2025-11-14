@@ -12,18 +12,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar, Clock, AlertCircle } from 'lucide-react'
-import { useState } from 'react'
+import { Calendar, Clock, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/use-toast'
+import { useRouter } from 'next/navigation'
 
 export default function SandSchoolBookingPage() {
   const [selectedDate, setSelectedDate] = useState('')
   const [duration, setDuration] = useState('')
-
-  const timeSlots = [
-    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00'
-  ]
+  const [selectedTime, setSelectedTime] = useState('')
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const { toast } = useToast()
+  const router = useRouter()
 
   const getPrice = () => {
     if (duration === '30') return '£2.50'
@@ -31,9 +33,95 @@ export default function SandSchoolBookingPage() {
     return '-'
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Fetch available time slots when date or duration changes
+  useEffect(() => {
+    if (selectedDate && duration) {
+      fetchAvailableSlots()
+    } else {
+      setAvailableSlots([])
+      setSelectedTime('')
+    }
+  }, [selectedDate, duration])
+
+  const fetchAvailableSlots = async () => {
+    setLoadingSlots(true)
+    setSelectedTime('')
+
+    try {
+      const response = await fetch(
+        `/api/bookings/sand-school?date=${selectedDate}&duration=${duration}`
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch available slots')
+      }
+
+      const data = await response.json()
+      setAvailableSlots(data.availableSlots || [])
+    } catch (error) {
+      console.error('Error fetching slots:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to load available time slots. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoadingSlots(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Sand school booking request submitted!')
+
+    if (!selectedDate || !duration || !selectedTime) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please select a date, duration, and time slot.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      const response = await fetch('/api/bookings/sand-school', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: selectedDate,
+          startTime: selectedTime,
+          duration: Number(duration),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to create booking')
+      }
+
+      toast({
+        title: 'Booking Submitted!',
+        description: 'Your sand school booking has been submitted for review.',
+      })
+
+      // Redirect to bookings page after a short delay
+      setTimeout(() => {
+        router.push('/dashboard/bookings')
+      }, 1500)
+    } catch (error) {
+      console.error('Error creating booking:', error)
+      toast({
+        title: 'Booking Failed',
+        description: error instanceof Error ? error.message : 'Failed to submit booking. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -99,23 +187,47 @@ export default function SandSchoolBookingPage() {
 
               {/* Available Time Slots */}
               <div className="space-y-2">
-                <Label>Available Time Slots</Label>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
-                  {timeSlots.map((slot) => (
-                    <Button
-                      key={slot}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                    >
-                      {slot}
-                    </Button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Click a time slot to select it (feature coming soon)
-                </p>
+                <Label>Available Time Slots *</Label>
+
+                {!selectedDate || !duration ? (
+                  <div className="p-4 border rounded-lg text-center text-muted-foreground text-sm">
+                    Please select a date and duration to view available time slots
+                  </div>
+                ) : loadingSlots ? (
+                  <div className="p-8 border rounded-lg flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Loading available slots...</span>
+                  </div>
+                ) : availableSlots.length === 0 ? (
+                  <div className="p-4 border rounded-lg text-center text-muted-foreground text-sm bg-red-50 border-red-200">
+                    <AlertCircle className="h-5 w-5 mx-auto mb-2 text-red-600" />
+                    No available time slots for this date and duration. Please try another date.
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
+                      {availableSlots.map((slot) => (
+                        <Button
+                          key={slot}
+                          type="button"
+                          variant={selectedTime === slot ? 'default' : 'outline'}
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setSelectedTime(slot)}
+                        >
+                          {selectedTime === slot && (
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                          )}
+                          {slot}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {availableSlots.length} slot{availableSlots.length !== 1 ? 's' : ''} available.
+                      Click a time slot to select it.
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* Important Notice */}
@@ -133,11 +245,29 @@ export default function SandSchoolBookingPage() {
 
               {/* Submit Button */}
               <div className="flex gap-3">
-                <Button type="submit" className="flex-1" disabled={!selectedDate || !duration}>
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Submit Booking Request
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={!selectedDate || !duration || !selectedTime || submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Submit Booking Request
+                    </>
+                  )}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => window.history.back()}
+                  disabled={submitting}
+                >
                   Cancel
                 </Button>
               </div>
@@ -171,20 +301,24 @@ export default function SandSchoolBookingPage() {
             <h3 className="font-heading text-lg font-semibold mb-3">Sand School Info</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
-                <span className="text-primary">•</span>
+                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                 <span>Open daily from 8:00 AM to 6:00 PM</span>
               </li>
               <li className="flex gap-2">
-                <span className="text-primary">•</span>
+                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                 <span>30-minute and 1-hour slots available</span>
               </li>
               <li className="flex gap-2">
-                <span className="text-primary">•</span>
+                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                 <span>Real-time availability checking</span>
               </li>
               <li className="flex gap-2">
-                <span className="text-primary">•</span>
-                <span>No double bookings guaranteed</span>
+                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                <span>No double bookings - guaranteed</span>
+              </li>
+              <li className="flex gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                <span>Instant booking confirmation</span>
               </li>
             </ul>
           </Card>

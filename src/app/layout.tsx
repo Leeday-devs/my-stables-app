@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Open_Sans, Poppins } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 // Luxury serif font for headings
 const playfair = Playfair_Display({
@@ -45,6 +46,7 @@ export default function RootLayout({
         className={`${playfair.variable} ${openSans.variable} ${poppins.variable} font-sans antialiased`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );
