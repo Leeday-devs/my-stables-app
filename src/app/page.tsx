@@ -29,7 +29,7 @@ export default function Home() {
               My Stables
             </h1>
             <p className="font-serif text-4xl md:text-6xl font-bold mb-6 text-primary-foreground tracking-tight">
-              Mearydown & Greenacres
+              Greenacres
             </p>
             <p className="text-lg md:text-xl mb-8 text-primary-foreground/90 font-light">
               Luxury mobile-first equestrian management. Book services, manage your stable,

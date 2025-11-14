@@ -6,24 +6,74 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Sparkles, ArrowLeft } from 'lucide-react'
+import { Sparkles, ArrowLeft, Loader2 } from 'lucide-react'
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError(null)
 
-    // Test credentials
-    if (email === 'admin@mystables.com' && password === 'admin123') {
-      router.push('/admin')
-    } else if (email === 'user@mystables.com' && password === 'user123') {
-      router.push('/dashboard')
-    } else {
-      alert('Invalid credentials. Try:\nUser: user@mystables.com / user123\nAdmin: admin@mystables.com / admin123')
+    try {
+      const supabase = createClient()
+
+      // Sign in with Supabase
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        setError(signInError.message)
+        setIsLoading(false)
+        return
+      }
+
+      if (!data.user) {
+        setError('Login failed. Please try again.')
+        setIsLoading(false)
+        return
+      }
+
+      // Check user role to determine redirect
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role, status')
+        .eq('id', data.user.id)
+        .single()
+
+      if (!userData) {
+        setError('User profile not found. Please contact support.')
+        setIsLoading(false)
+        return
+      }
+
+      if (userData.status !== 'ACTIVE') {
+        setError('Your account is pending approval. Please wait for admin approval.')
+        await supabase.auth.signOut()
+        setIsLoading(false)
+        return
+      }
+
+      // Redirect based on role
+      if (userData.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
+
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      setIsLoading(false)
     }
   }
   return (
@@ -81,19 +131,24 @@ export default function LoginPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Sign In
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </form>
-
-          {/* Test Credentials Helper */}
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs font-semibold text-blue-900 mb-2">Test Credentials:</p>
-            <div className="space-y-1 text-xs text-blue-700">
-              <p><strong>User:</strong> user@mystables.com / user123</p>
-              <p><strong>Admin:</strong> admin@mystables.com / admin123</p>
-            </div>
-          </div>
 
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
