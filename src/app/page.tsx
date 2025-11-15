@@ -320,6 +320,94 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Custom Development Section */}
+      <section className="relative py-20 px-4 overflow-hidden">
+        <div className="container mx-auto max-w-6xl">
+          <div className="relative isolate overflow-hidden rounded-3xl shadow-2xl">
+            {/* Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900"></div>
+
+            {/* Decorative Pattern Overlay */}
+            <div className="absolute inset-0 opacity-10">
+              <svg className="absolute top-8 right-8 w-32 h-32 text-white rotate-12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C7.58 2 4 5.58 4 10c0 1.5.5 3 1.2 4.2L4 22l2.5-1.5L8 22l1.5-1.5L11 22l1-2 1 2 1.5-1.5L16 22l1.5-1.5L20 22l-1.2-7.8c.7-1.2 1.2-2.7 1.2-4.2 0-4.42-3.58-8-8-8zm0 2c3.31 0 6 2.69 6 6 0 1-.3 2-.8 2.8l-.2.4.6 3.8-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6.6-3.8-.2-.4c-.5-.8-.8-1.8-.8-2.8 0-3.31 2.69-6 6-6z"/>
+              </svg>
+              <svg className="absolute bottom-12 left-12 w-40 h-40 text-white -rotate-45" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C7.58 2 4 5.58 4 10c0 1.5.5 3 1.2 4.2L4 22l2.5-1.5L8 22l1.5-1.5L11 22l1-2 1 2 1.5-1.5L16 22l1.5-1.5L20 22l-1.2-7.8c.7-1.2 1.2-2.7 1.2-4.2 0-4.42-3.58-8-8-8zm0 2c3.31 0 6 2.69 6 6 0 1-.3 2-.8 2.8l-.2.4.6 3.8-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6.6-3.8-.2-.4c-.5-.8-.8-1.8-.8-2.8 0-3.31 2.69-6 6-6z"/>
+              </svg>
+            </div>
+
+            {/* Content */}
+            <div className="relative px-6 py-16 sm:px-16 sm:py-24 lg:px-24 lg:py-32">
+              <div className="mx-auto max-w-3xl text-center">
+                <Badge className="mb-6 bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30">
+                  Custom Development
+                </Badge>
+                <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+                  Need Your Own Equestrian Management Solution?
+                </h2>
+                <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
+                  Every stable is unique. Get a bespoke equestrian management application
+                  tailored precisely to your yard's workflow, services, and requirements.
+                  From booking systems to revenue tracking, we'll build exactly what you need.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm text-white/70">Visit Website</p>
+                      <a
+                        href="https://leeday.uk"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold hover:underline"
+                      >
+                        leeday.uk
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="hidden sm:block w-px h-12 bg-white/30"></div>
+
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm text-white/70">Email Us</p>
+                      <a
+                        href="mailto:leedaydevs@gmail.com"
+                        className="font-semibold hover:underline"
+                      >
+                        leedaydevs@gmail.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 text-white/80 text-sm">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Tailored Solutions</span>
+                  <span className="mx-2">•</span>
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Mobile-First Design</span>
+                  <span className="mx-2">•</span>
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Ongoing Support</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="relative py-20 px-4 bg-background overflow-hidden">
         {/* Decorative Horseshoes */}

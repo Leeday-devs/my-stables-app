@@ -1,15 +1,5 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Users,
   Calendar,
@@ -17,58 +7,53 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
-  XCircle,
   AlertCircle
 } from 'lucide-react'
+import { getPendingUsers, getPendingBookings, getAdminStats } from '@/lib/actions/admin'
+import PendingUserCard from '@/components/admin/PendingUserCard'
+import PendingBookingCard from '@/components/admin/PendingBookingCard'
 
-export default function AdminDashboard() {
-  // Mock data - will be replaced with real Supabase data
-  const stats = [
+export default async function AdminDashboard() {
+  // Fetch real data from Supabase
+  const [pendingUsers, pendingBookings, stats] = await Promise.all([
+    getPendingUsers(),
+    getPendingBookings(),
+    getAdminStats()
+  ])
+
+  const statsDisplay = [
     {
       name: 'Pending Users',
-      value: '3',
+      value: stats.pendingUsers.toString(),
       icon: Users,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
-      change: '+2 this week'
+      change: `${pendingUsers.length} waiting`
     },
     {
       name: 'Pending Bookings',
-      value: '8',
+      value: stats.pendingBookings.toString(),
       icon: Clock,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
-      change: '+5 today'
+      change: 'Need review'
     },
     {
       name: 'Revenue This Month',
-      value: '£485',
+      value: `£${stats.monthlyRevenue.toFixed(2)}`,
       icon: DollarSign,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
-      change: '+12% from last month'
+      change: 'From approved bookings'
     },
     {
       name: 'Active Users',
-      value: '24',
+      value: stats.activeUsers.toString(),
       icon: TrendingUp,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
-      change: '+3 this month'
+      change: 'Approved accounts'
     },
-  ]
-
-  const pendingUsers = [
-    { id: 1, name: 'Sarah Johnson', email: 'sarah.j@email.com', date: '2025-11-03' },
-    { id: 2, name: 'Mike Peters', email: 'mike.p@email.com', date: '2025-11-04' },
-    { id: 3, name: 'Emma Wilson', email: 'emma.w@email.com', date: '2025-11-05' },
-  ]
-
-  const pendingBookings = [
-    { id: 1, user: 'John Smith', service: 'Grooming', horse: 'Thunder', date: '2025-11-06', price: '£10' },
-    { id: 2, user: 'Lisa Brown', service: 'Mucking Out', horse: 'Star', date: '2025-11-06', price: '£10' },
-    { id: 3, user: 'Tom Davis', service: 'Sand School', horse: 'N/A', date: '2025-11-07', price: '£5' },
-    { id: 4, user: 'Anna Clark', service: 'Grooming', horse: 'Spirit', date: '2025-11-07', price: '£10' },
   ]
 
   return (
@@ -83,7 +68,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8 max-w-2xl">
-        {stats.map((stat) => (
+        {statsDisplay.map((stat) => (
           <Card key={stat.name} className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -116,29 +101,16 @@ export default function AdminDashboard() {
           </div>
 
           <div className="space-y-4">
-            {pendingUsers.map((user) => (
-              <div key={user.id} className="flex items-center justify-between border-b pb-4 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 text-secondary font-semibold">
-                    {user.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                  </div>
-                </div>
-                <div className="flex gap-1 sm:gap-2">
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700 px-2 sm:px-3">
-                    <CheckCircle className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Approve</span>
-                  </Button>
-                  <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 px-2 sm:px-3">
-                    <XCircle className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Deny</span>
-                  </Button>
-                </div>
+            {pendingUsers.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500" />
+                <p>No pending user approvals</p>
               </div>
-            ))}
+            ) : (
+              pendingUsers.map((user) => (
+                <PendingUserCard key={user.id} user={user} />
+              ))
+            )}
           </div>
         </Card>
 
@@ -157,27 +129,16 @@ export default function AdminDashboard() {
           </div>
 
           <div className="space-y-4">
-            {pendingBookings.slice(0, 4).map((booking) => (
-              <div key={booking.id} className="flex items-center justify-between border-b pb-4 last:border-0">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium">{booking.service}</p>
-                    <Badge variant="outline" className="text-xs">{booking.price}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {booking.user} • {booking.horse !== 'N/A' ? `${booking.horse} • ` : ''}{booking.date}
-                  </p>
-                </div>
-                <div className="flex gap-1 sm:gap-2 shrink-0">
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8 w-8 p-0">
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-8 w-8 p-0">
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                </div>
+            {pendingBookings.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500" />
+                <p>No pending bookings</p>
               </div>
-            ))}
+            ) : (
+              pendingBookings.slice(0, 4).map((booking) => (
+                <PendingBookingCard key={booking.id} booking={booking} />
+              ))
+            )}
           </div>
         </Card>
       </div>
@@ -186,42 +147,47 @@ export default function AdminDashboard() {
       <Card className="p-6 mt-6">
         <h2 className="font-heading text-xl font-semibold mb-4">Recent Activity</h2>
         <div className="space-y-4">
-          <div className="flex items-start gap-3 pb-4 border-b">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+          {pendingUsers.length === 0 && pendingBookings.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <AlertCircle className="h-12 w-12 mx-auto mb-2" />
+              <p>No recent activity to display</p>
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Booking Approved</p>
-              <p className="text-sm text-muted-foreground">
-                You approved grooming for Thunder by Sarah Johnson
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 pb-4 border-b">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-              <Users className="h-4 w-4 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">New User Registration</p>
-              <p className="text-sm text-muted-foreground">
-                Emma Wilson registered and is pending approval
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">5 hours ago</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100">
-              <Calendar className="h-4 w-4 text-orange-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Sand School Booked</p>
-              <p className="text-sm text-muted-foreground">
-                Tom Davis booked sand school for tomorrow 2-3pm
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">Yesterday</p>
-            </div>
-          </div>
+          ) : (
+            <>
+              {pendingUsers.slice(0, 2).map((user) => (
+                <div key={user.id} className="flex items-start gap-3 pb-4 border-b">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                    <Users className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">New User Registration</p>
+                    <p className="text-sm text-muted-foreground">
+                      {user.full_name || user.email} registered and is pending approval
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {pendingBookings.slice(0, 1).map((booking) => (
+                <div key={booking.id} className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100">
+                    <Calendar className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">New Booking Request</p>
+                    <p className="text-sm text-muted-foreground">
+                      {booking.user} requested {booking.service}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(booking.requestedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </Card>
     </div>

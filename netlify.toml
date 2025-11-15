@@ -2,7 +2,8 @@
 
 [build]
   command = "npm run build"
-  publish = ".next"
+  # Note: Do not specify 'publish' when using @netlify/plugin-nextjs
+  # The plugin automatically handles the deployment
 
 [build.environment]
   NODE_VERSION = "20"
@@ -12,16 +13,8 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Redirects and rewrites
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Note: The @netlify/plugin-nextjs plugin handles routing automatically
+# No need for manual redirects for Next.js routes
 
 # Headers for security
 [[headers]]

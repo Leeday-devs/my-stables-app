@@ -1,6 +1,5 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Table,
@@ -10,16 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Search, UserPlus, MoreVertical, CheckCircle, XCircle } from 'lucide-react'
+import { Search } from 'lucide-react'
+import { getAllUsers } from '@/lib/actions/admin'
+import UserActionsCell from '@/components/admin/UserActionsCell'
 
-export default function UsersPage() {
-  const users = [
-    { id: 1, name: 'Sarah Johnson', email: 'sarah.j@email.com', status: 'ACTIVE', joined: '2025-10-15' },
-    { id: 2, name: 'John Smith', email: 'john.s@email.com', status: 'ACTIVE', joined: '2025-10-20' },
-    { id: 3, name: 'Mike Peters', email: 'mike.p@email.com', status: 'PENDING_APPROVAL', joined: '2025-11-04' },
-    { id: 4, name: 'Emma Wilson', email: 'emma.w@email.com', status: 'PENDING_APPROVAL', joined: '2025-11-05' },
-    { id: 5, name: 'Lisa Brown', email: 'lisa.b@email.com', status: 'ACTIVE', joined: '2025-10-28' },
-  ]
+export default async function UsersPage() {
+  const users = await getAllUsers()
+
+  const activeCount = users.filter(u => u.status === 'ACTIVE').length
+  const pendingCount = users.filter(u => u.status === 'PENDING_APPROVAL').length
+  const suspendedCount = users.filter(u => u.status === 'SUSPENDED').length
 
   return (
     <div className="p-4 md:p-8">
@@ -31,20 +30,22 @@ export default function UsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 mb-6 max-w-lg md:max-w-none">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 mb-6 max-w-lg md:max-w-none">
         <Card className="p-3">
           <p className="text-xs text-muted-foreground mb-1">Total Users</p>
           <p className="text-lg md:text-xl font-bold">{users.length}</p>
         </Card>
-        <Card className="p-3 hidden md:block">
+        <Card className="p-3">
           <p className="text-xs text-muted-foreground mb-1">Active Users</p>
-          <p className="text-lg md:text-xl font-bold">{users.filter(u => u.status === 'ACTIVE').length}</p>
+          <p className="text-lg md:text-xl font-bold text-green-600">{activeCount}</p>
         </Card>
         <Card className="p-3">
           <p className="text-xs text-muted-foreground mb-1">Pending Approval</p>
-          <p className="text-lg md:text-xl font-bold text-orange-600">
-            {users.filter(u => u.status === 'PENDING_APPROVAL').length}
-          </p>
+          <p className="text-lg md:text-xl font-bold text-orange-600">{pendingCount}</p>
+        </Card>
+        <Card className="p-3">
+          <p className="text-xs text-muted-foreground mb-1">Suspended</p>
+          <p className="text-lg md:text-xl font-bold text-red-600">{suspendedCount}</p>
         </Card>
       </div>
 
@@ -57,51 +58,58 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  {user.status === 'ACTIVE' ? (
-                    <Badge className="bg-green-100 text-green-700">Active</Badge>
-                  ) : (
-                    <Badge className="bg-orange-100 text-orange-700">Pending</Badge>
-                  )}
-                </TableCell>
-                <TableCell>{user.joined}</TableCell>
-                <TableCell className="text-right">
-                  {user.status === 'PENDING_APPROVAL' ? (
-                    <div className="flex justify-end gap-2">
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Approve
-                      </Button>
-                      <Button size="sm" variant="outline" className="border-red-200 text-red-600">
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Deny
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {users.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No users found</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">
+                      {user.full_name || 'No name'}
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      {user.status === 'ACTIVE' ? (
+                        <Badge className="bg-green-100 text-green-700">Active</Badge>
+                      ) : user.status === 'SUSPENDED' ? (
+                        <Badge className="bg-red-100 text-red-700">Suspended</Badge>
+                      ) : (
+                        <Badge className="bg-orange-100 text-orange-700">Pending</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {user.role === 'ADMIN' ? (
+                        <Badge variant="secondary">Admin</Badge>
+                      ) : (
+                        <Badge variant="outline">User</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <UserActionsCell user={user} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </Card>
     </div>
   )
