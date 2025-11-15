@@ -121,3 +121,128 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Horse-themed animations */
+@keyframes gallop {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-4px) scale(1.02);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.01);
+  }
+  75% {
+    transform: translateY(-6px) scale(1.03);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes horseshoe-bounce {
+  0%, 100% {
+    transform: rotate(-12deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-12deg) translateY(-8px);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-gallop {
+  animation: gallop 1.2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-horseshoe-bounce {
+  animation: horseshoe-bounce 2s ease-in-out infinite;
+}
+
+.button-hover-lift {
+  transition: all 0.3s ease;
+}
+
+.button-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(201, 168, 106, 0.4);
+}
+
+.button-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.button-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.button-shimmer:hover::before {
+  left: 100%;
+}
+
+/* Feature Card Animations */
+@keyframes card-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(201, 168, 106, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(201, 168, 106, 0.3);
+  }
+}
+
+@keyframes icon-bounce {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.card-hover-glow:hover {
+  animation: card-glow 2s ease-in-out infinite;
+}
+
+.icon-hover-bounce:hover {
+  animation: icon-bounce 0.6s ease-in-out;
+}
