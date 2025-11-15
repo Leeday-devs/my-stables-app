@@ -64,6 +64,7 @@ export default function RegisterPage() {
       }
 
       // Create user profile in public.users table
+      // Note: If a database trigger exists, it may have already created the profile
       const { error: profileError } = await supabase
         .from('users')
         .insert({
@@ -72,13 +73,22 @@ export default function RegisterPage() {
           full_name: `${formData.firstName} ${formData.lastName}`,
           phone: formData.phone,
           role: 'USER',
-          status: 'PENDING'
+          status: 'PENDING_APPROVAL'
         })
 
+      // Handle profile creation errors
       if (profileError) {
-        setError('Failed to create user profile. Please contact support.')
-        setIsLoading(false)
-        return
+        // Check if it's a duplicate key error (profile already created by trigger)
+        if (profileError.code === '23505') {
+          console.log('User profile already created by database trigger')
+          // This is OK - the trigger created the profile, we can continue
+        } else {
+          // This is a real error
+          console.error('Profile creation error:', profileError)
+          setError(`Failed to create user profile: ${profileError.message}`)
+          setIsLoading(false)
+          return
+        }
       }
 
       // Sign out the user (they need admin approval)
