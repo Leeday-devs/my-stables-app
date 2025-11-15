@@ -1,0 +1,58 @@
+{
+  "name": "My Stables - Greenacres",
+  "short_name": "My Stables",
+  "description": "Luxury mobile-first equestrian management. Book services, manage your stable, and track your horses with elegance and ease.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b6c4c",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [
+    {
+      "src": "/user-mobile-screenshot-v2.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "User Dashboard"
+    },
+    {
+      "src": "/admin-mobile-screenshot-v2.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Admin Panel"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book Service",
+      "short_name": "Book",
+      "description": "Book a horse care service",
+      "url": "/dashboard/bookings/horse-care",
+      "icons": [{ "src": "/icon-192x192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Sand School",
+      "short_name": "Sand School",
+      "description": "Book sand school time",
+      "url": "/dashboard/bookings/sand-school",
+      "icons": [{ "src": "/icon-192x192.svg", "sizes": "192x192" }]
+    }
+  ]
+}

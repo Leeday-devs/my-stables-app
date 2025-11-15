@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - My Stables</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #8b6c4c 0%, #6d5439 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: Georgia, serif;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    p {
+      font-size: 1.125rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+
+    button {
+      background: white;
+      color: #8b6c4c;
+      border: none;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .horseshoe {
+      margin: 20px auto;
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.6);
+      border-top: none;
+      border-radius: 0 0 60px 60px;
+      position: relative;
+    }
+
+    .horseshoe::before,
+    .horseshoe::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      bottom: 15px;
+    }
+
+    .horseshoe::before {
+      left: 5px;
+    }
+
+    .horseshoe::after {
+      right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="horseshoe"></div>
+    <h1>You're Offline</h1>
+    <p>
+      It looks like you've lost your internet connection.
+      My Stables needs an internet connection to load new content.
+    </p>
+    <button onclick="location.reload()">Try Again</button>
+  </div>
+</body>
+</html>

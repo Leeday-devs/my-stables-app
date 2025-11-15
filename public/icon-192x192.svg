@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners -->
+  <rect width="192" height="192" fill="#8b6c4c" rx="38"/>
+
+  <!-- Decorative circle background -->
+  <circle cx="96" cy="85" r="55" fill="white" opacity="0.15"/>
+
+  <!-- Horse Head Silhouette -->
+  <g transform="translate(96, 75) scale(2.5)">
+    <path d="M-8,-12 L-6,-8 L-8,-4 L-10,-2 L-12,0 L-12,4 L-10,8 L-6,10 L-2,10 L2,8 L4,6 L6,2 L8,-2 L8,-8 L6,-12 L4,-14 L0,-16 L-4,-16 L-8,-14 Z"
+          fill="white"/>
+    <!-- Eye -->
+    <circle cx="0" cy="-6" r="1.5" fill="#8b6c4c"/>
+    <!-- Ear -->
+    <path d="M-2,-14 L0,-18 L2,-14" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Brand Text -->
+  <text x="96" y="145"
+        font-family="serif"
+        font-size="32"
+        font-weight="bold"
+        fill="white"
+        text-anchor="middle"
+        letter-spacing="2">MS</text>
+
+  <!-- Decorative horseshoe -->
+  <g transform="translate(96, 165)">
+    <path d="M-15,0 Q-15,-8 -8,-10 Q0,-12 8,-10 Q15,-8 15,0"
+          stroke="white"
+          stroke-width="2.5"
+          fill="none"
+          opacity="0.6"
+          stroke-linecap="round"/>
+    <circle cx="-12" cy="-4" r="1.5" fill="white" opacity="0.6"/>
+    <circle cx="12" cy="-4" r="1.5" fill="white" opacity="0.6"/>
+  </g>
+</svg>

@@ -23,11 +23,11 @@ import { useState } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Users', href: '/admin/users', icon: Users },
-  { name: 'Services', href: '/admin/services', icon: Sparkles },
   { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
+  { name: 'Services', href: '/admin/services', icon: Sparkles },
   { name: 'Sand School', href: '/admin/sand-school', icon: CalendarDays },
   { name: 'Revenue', href: '/admin/revenue', icon: DollarSign },
+  { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 

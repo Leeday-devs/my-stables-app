@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Sparkles, Star, CheckCircle, Clock, Users } from 'lucide-react'
+import { DownloadButtons } from '@/components/pwa/DownloadButtons'
 
 export default function Home() {
   return (
@@ -43,6 +44,7 @@ export default function Home() {
                 <Link href="/auth/login">Sign In</Link>
               </Button>
             </div>
+            <DownloadButtons />
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent"></div>
