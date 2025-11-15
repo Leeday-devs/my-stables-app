@@ -10,7 +10,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Plus } from 'lucide-react'
-import { getAllServices, formatDuration } from '@/lib/actions/services'
+import { getAllServices } from '@/lib/actions/services'
+import { formatDuration } from '@/lib/utils/duration'
 import ServiceActionsCell from '@/components/admin/ServiceActionsCell'
 import ServiceFormDialog from '@/components/admin/ServiceFormDialog'
 

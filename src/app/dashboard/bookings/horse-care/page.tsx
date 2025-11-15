@@ -15,7 +15,7 @@ import {
 import { Calendar, Sparkles, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { formatDuration } from '@/lib/actions/services'
+import { formatDuration } from '@/lib/utils/duration'
 
 interface Service {
   id: string
