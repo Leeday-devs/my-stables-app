@@ -13,8 +13,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Calendar, Sparkles, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { formatDuration } from '@/lib/actions/services'
+
+interface Service {
+  id: string
+  name: string
+  description: string | null
+  price: number
+  duration_minutes: number
+  active: boolean
+}
 
 export default function HorseCareBookingPage() {
   const router = useRouter()
@@ -25,11 +35,26 @@ export default function HorseCareBookingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [services, setServices] = useState<Service[]>([])
+  const [isLoadingServices, setIsLoadingServices] = useState(true)
 
-  const services = [
-    { id: '1', name: 'Grooming', price: '£10', duration: '1 hour' },
-    { id: '2', name: 'Mucking Out', price: '£10', duration: '45 minutes' },
-  ]
+  // Fetch services on mount
+  useEffect(() => {
+    async function fetchServices() {
+      try {
+        const response = await fetch('/api/services')
+        if (!response.ok) throw new Error('Failed to fetch services')
+        const data = await response.json()
+        setServices(data.services || [])
+      } catch (err) {
+        console.error('Error fetching services:', err)
+        setError('Failed to load services')
+      } finally {
+        setIsLoadingServices(false)
+      }
+    }
+    fetchServices()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,9 +117,9 @@ export default function HorseCareBookingPage() {
               {/* Service Selection */}
               <div className="space-y-2">
                 <Label htmlFor="service">Select Service *</Label>
-                <Select value={service} onValueChange={setService}>
+                <Select value={service} onValueChange={setService} disabled={isLoadingServices || services.length === 0}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a service" />
+                    <SelectValue placeholder={isLoadingServices ? "Loading services..." : services.length === 0 ? "No services available" : "Choose a service"} />
                   </SelectTrigger>
                   <SelectContent>
                     {services.map((s) => (
@@ -102,7 +127,7 @@ export default function HorseCareBookingPage() {
                         <div className="flex items-center justify-between w-full">
                           <span>{s.name}</span>
                           <span className="ml-2 text-sm text-muted-foreground">
-                            {s.price} • {s.duration}
+                            £{Number(s.price).toFixed(2)} • {formatDuration(s.duration_minutes)}
                           </span>
                         </div>
                       </SelectItem>
@@ -227,22 +252,35 @@ export default function HorseCareBookingPage() {
         <div className="space-y-6">
           <Card className="p-6">
             <h3 className="font-heading text-lg font-semibold mb-4">Available Services</h3>
-            <div className="space-y-4">
-              {services.map((s) => (
-                <div key={s.id} className="border-b pb-4 last:border-0">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-secondary/10 flex-shrink-0">
-                      <Sparkles className="h-4 w-4 text-secondary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{s.name}</p>
-                      <p className="text-sm text-muted-foreground">{s.duration}</p>
-                      <p className="text-lg font-bold text-secondary mt-1">{s.price}</p>
+            {isLoadingServices ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : services.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">No services available at the moment.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {services.map((s) => (
+                  <div key={s.id} className="border-b pb-4 last:border-0">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-secondary/10 flex-shrink-0">
+                        <Sparkles className="h-4 w-4 text-secondary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{s.name}</p>
+                        {s.description && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
+                        )}
+                        <p className="text-sm text-muted-foreground mt-1">{formatDuration(s.duration_minutes)}</p>
+                        <p className="text-lg font-bold text-secondary mt-1">£{Number(s.price).toFixed(2)}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           <Card className="p-6 bg-muted/30">

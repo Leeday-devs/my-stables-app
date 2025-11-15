@@ -1,8 +1,15 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { CheckCircle, XCircle, MoreVertical } from 'lucide-react'
-import { approveUser, denyUser } from '@/lib/actions/admin'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { CheckCircle, XCircle, MoreVertical, Ban, RefreshCw, Trash2 } from 'lucide-react'
+import { approveUser, denyUser, suspendUser, reactivateUser, deleteUser } from '@/lib/actions/admin'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -50,6 +57,59 @@ export default function UserActionsCell({ user }: UserActionsCellProps) {
     }
   }
 
+  const handleSuspend = async () => {
+    if (!confirm(`Are you sure you want to suspend ${user.full_name || user.email}? They will not be able to access the system.`)) {
+      return
+    }
+
+    setIsProcessing(true)
+    const result = await suspendUser(user.id)
+
+    if (result.success) {
+      router.refresh()
+    } else {
+      alert(`Failed to suspend user: ${result.error}`)
+      setIsProcessing(false)
+    }
+  }
+
+  const handleReactivate = async () => {
+    if (!confirm(`Are you sure you want to reactivate ${user.full_name || user.email}?`)) {
+      return
+    }
+
+    setIsProcessing(true)
+    const result = await reactivateUser(user.id)
+
+    if (result.success) {
+      router.refresh()
+    } else {
+      alert(`Failed to reactivate user: ${result.error}`)
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm(`⚠️ WARNING: Are you sure you want to permanently delete ${user.full_name || user.email}? This action cannot be undone and will remove all their data including bookings.`)) {
+      return
+    }
+
+    // Double confirmation for safety
+    if (!confirm(`This is your final confirmation. Type "DELETE" in your mind and click OK to permanently delete this user.`)) {
+      return
+    }
+
+    setIsProcessing(true)
+    const result = await deleteUser(user.id)
+
+    if (result.success) {
+      router.refresh()
+    } else {
+      alert(`Failed to delete user: ${result.error}`)
+      setIsProcessing(false)
+    }
+  }
+
   if (user.status === 'PENDING_APPROVAL') {
     return (
       <div className="flex justify-end gap-2">
@@ -76,9 +136,42 @@ export default function UserActionsCell({ user }: UserActionsCellProps) {
     )
   }
 
+  // For admins, don't show action menu
+  if (user.role === 'ADMIN') {
+    return (
+      <div className="text-xs text-muted-foreground italic">
+        Admin
+      </div>
+    )
+  }
+
+  // For active and suspended users, show dropdown menu
   return (
-    <Button variant="ghost" size="sm">
-      <MoreVertical className="h-4 w-4" />
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" disabled={isProcessing}>
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        {user.status === 'ACTIVE' && (
+          <DropdownMenuItem onClick={handleSuspend} className="text-orange-600">
+            <Ban className="h-4 w-4 mr-2" />
+            Suspend User
+          </DropdownMenuItem>
+        )}
+        {user.status === 'SUSPENDED' && (
+          <DropdownMenuItem onClick={handleReactivate} className="text-green-600">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Reactivate User
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete User
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

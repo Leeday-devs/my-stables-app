@@ -336,6 +336,185 @@ export async function denyBooking(bookingId: string, bookingType: 'horse_care' |
   return { success: true }
 }
 
+export async function suspendUser(userId: string) {
+  const supabase = await createClient()
+
+  // Get current user (admin)
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+
+  if (!currentUser) {
+    return { success: false, error: 'Not authenticated' }
+  }
+
+  // Check if current user is admin
+  const { data: adminUser } = await supabase
+    .from('users')
+    .select('role, status')
+    .eq('id', currentUser.id)
+    .single()
+
+  if (!adminUser || adminUser.role !== 'ADMIN' || adminUser.status !== 'ACTIVE') {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  // Get target user to check if they're an admin
+  const { data: targetUser } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+  if (!targetUser) {
+    return { success: false, error: 'User not found' }
+  }
+
+  if (targetUser.role === 'ADMIN') {
+    return { success: false, error: 'Cannot suspend admin users' }
+  }
+
+  // Update user status to SUSPENDED
+  const { error } = await supabase
+    .from('users')
+    .update({
+      status: 'SUSPENDED',
+      approved_by: currentUser.id,
+      approved_at: new Date().toISOString()
+    })
+    .eq('id', userId)
+
+  if (error) {
+    console.error('Error suspending user:', error)
+    return { success: false, error: error.message }
+  }
+
+  // Create notification for the user
+  await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      type: 'ACCOUNT_SUSPENDED',
+      title: 'Account Suspended',
+      message: 'Your account has been suspended. Please contact support for more information.',
+      read: false
+    })
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/users')
+
+  return { success: true }
+}
+
+export async function reactivateUser(userId: string) {
+  const supabase = await createClient()
+
+  // Get current user (admin)
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+
+  if (!currentUser) {
+    return { success: false, error: 'Not authenticated' }
+  }
+
+  // Check if current user is admin
+  const { data: adminUser } = await supabase
+    .from('users')
+    .select('role, status')
+    .eq('id', currentUser.id)
+    .single()
+
+  if (!adminUser || adminUser.role !== 'ADMIN' || adminUser.status !== 'ACTIVE') {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  // Update user status to ACTIVE
+  const { error } = await supabase
+    .from('users')
+    .update({
+      status: 'ACTIVE',
+      approved_by: currentUser.id,
+      approved_at: new Date().toISOString()
+    })
+    .eq('id', userId)
+
+  if (error) {
+    console.error('Error reactivating user:', error)
+    return { success: false, error: error.message }
+  }
+
+  // Create notification for the user
+  await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      type: 'ACCOUNT_REACTIVATED',
+      title: 'Account Reactivated',
+      message: 'Your account has been reactivated. You can now access all services.',
+      read: false
+    })
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/users')
+
+  return { success: true }
+}
+
+export async function deleteUser(userId: string) {
+  const supabase = await createClient()
+
+  // Get current user (admin)
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+
+  if (!currentUser) {
+    return { success: false, error: 'Not authenticated' }
+  }
+
+  // Check if current user is admin
+  const { data: adminUser } = await supabase
+    .from('users')
+    .select('role, status')
+    .eq('id', currentUser.id)
+    .single()
+
+  if (!adminUser || adminUser.role !== 'ADMIN' || adminUser.status !== 'ACTIVE') {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  // Get target user to check if they're an admin
+  const { data: targetUser } = await supabase
+    .from('users')
+    .select('role, email')
+    .eq('id', userId)
+    .single()
+
+  if (!targetUser) {
+    return { success: false, error: 'User not found' }
+  }
+
+  if (targetUser.role === 'ADMIN') {
+    return { success: false, error: 'Cannot delete admin users' }
+  }
+
+  // Prevent deleting yourself
+  if (userId === currentUser.id) {
+    return { success: false, error: 'Cannot delete your own account' }
+  }
+
+  // Delete the user (cascade will handle related records)
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', userId)
+
+  if (error) {
+    console.error('Error deleting user:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/users')
+
+  return { success: true }
+}
+
 export async function getAdminStats() {
   const supabase = await createClient()
 
