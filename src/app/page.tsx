@@ -358,32 +358,53 @@ export default function Home() {
       </section>
 
       {/* Custom Development Section */}
-      <section className="relative py-20 px-4 overflow-hidden">
+      <section className="relative py-20 px-4 overflow-hidden bg-gradient-to-b from-background to-muted/30">
         <div className="container mx-auto max-w-6xl">
-          <div className="relative isolate overflow-hidden rounded-3xl shadow-2xl">
-            {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900"></div>
+          <div className="relative isolate overflow-hidden rounded-3xl shadow-2xl border-2 border-secondary/20">
+            {/* Elegant Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-secondary"></div>
 
-            {/* Decorative Pattern Overlay */}
-            <div className="absolute inset-0 opacity-10">
-              <svg className="absolute top-8 right-8 w-32 h-32 text-white rotate-12" viewBox="0 0 24 24" fill="currentColor">
+            {/* Decorative Horse-Themed Pattern Overlay */}
+            <div className="absolute inset-0 opacity-[0.08]">
+              {/* Horse Silhouette - Top Right */}
+              <svg className="absolute top-8 right-12 w-48 h-48 text-white" viewBox="0 0 200 200" fill="currentColor">
+                <path d="M150,60 Q160,45 165,50 Q170,55 165,65 L160,75 Q155,85 145,90 L140,95 Q130,105 120,110 L110,115 Q100,120 90,125 L80,130 Q70,135 65,145 L60,155 Q58,165 60,175 L40,170 Q35,168 35,163 L35,145 Q35,135 40,125 L45,115 Q50,105 60,95 L70,85 Q80,75 95,65 L110,55 Q125,45 140,50 L150,60 Z M165,55 Q168,58 167,62 Q166,66 163,68 Q160,70 156,69 Q152,68 150,65 Q148,62 149,58 Q150,54 153,52 Q156,50 160,51 Q164,52 165,55 Z"/>
+              </svg>
+
+              {/* Horseshoe - Bottom Left */}
+              <svg className="absolute bottom-16 left-8 w-32 h-32 text-white rotate-12" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C7.58 2 4 5.58 4 10c0 1.5.5 3 1.2 4.2L4 22l2.5-1.5L8 22l1.5-1.5L11 22l1-2 1 2 1.5-1.5L16 22l1.5-1.5L20 22l-1.2-7.8c.7-1.2 1.2-2.7 1.2-4.2 0-4.42-3.58-8-8-8zm0 2c3.31 0 6 2.69 6 6 0 1-.3 2-.8 2.8l-.2.4.6 3.8-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6.6-3.8-.2-.4c-.5-.8-.8-1.8-.8-2.8 0-3.31 2.69-6 6-6z"/>
               </svg>
-              <svg className="absolute bottom-12 left-12 w-40 h-40 text-white -rotate-45" viewBox="0 0 24 24" fill="currentColor">
+
+              {/* Horse Silhouette - Bottom Right */}
+              <svg className="absolute bottom-8 right-16 w-40 h-40 text-white -scale-x-100" viewBox="0 0 200 200" fill="currentColor">
+                <path d="M150,60 Q160,45 165,50 Q170,55 165,65 L160,75 Q155,85 145,90 L140,95 Q130,105 120,110 L110,115 Q100,120 90,125 L80,130 Q70,135 65,145 L60,155 Q58,165 60,175 L40,170 Q35,168 35,163 L35,145 Q35,135 40,125 L45,115 Q50,105 60,95 L70,85 Q80,75 95,65 L110,55 Q125,45 140,50 L150,60 Z"/>
+              </svg>
+
+              {/* Horseshoe - Top Left */}
+              <svg className="absolute top-20 left-16 w-28 h-28 text-white -rotate-45" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C7.58 2 4 5.58 4 10c0 1.5.5 3 1.2 4.2L4 22l2.5-1.5L8 22l1.5-1.5L11 22l1-2 1 2 1.5-1.5L16 22l1.5-1.5L20 22l-1.2-7.8c.7-1.2 1.2-2.7 1.2-4.2 0-4.42-3.58-8-8-8zm0 2c3.31 0 6 2.69 6 6 0 1-.3 2-.8 2.8l-.2.4.6 3.8-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6.6-3.8-.2-.4c-.5-.8-.8-1.8-.8-2.8 0-3.31 2.69-6 6-6z"/>
+              </svg>
+
+              {/* Decorative Stars/Sparkles */}
+              <svg className="absolute top-1/3 left-1/4 w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l2.4 7.4h7.6l-6 4.6 2.4 7.4-6-4.6-6 4.6 2.4-7.4-6-4.6h7.6z"/>
+              </svg>
+              <svg className="absolute bottom-1/3 right-1/3 w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l2.4 7.4h7.6l-6 4.6 2.4 7.4-6-4.6-6 4.6 2.4-7.4-6-4.6h7.6z"/>
               </svg>
             </div>
 
             {/* Content */}
             <div className="relative px-6 py-16 sm:px-16 sm:py-24 lg:px-24 lg:py-32">
               <div className="mx-auto max-w-3xl text-center">
-                <Badge className="mb-6 bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30">
+                <Badge className="mb-6 bg-secondary/90 backdrop-blur-sm text-white border-secondary hover:bg-secondary shadow-lg">
                   Custom Development
                 </Badge>
-                <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+                <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 drop-shadow-lg">
                   Looking for your own equestrian management solution?
                 </h2>
-                <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
+                <p className="text-lg md:text-xl text-white/95 mb-8 leading-relaxed drop-shadow-md">
                   Every stable is unique. Get a bespoke equestrian management application
                   tailored precisely to your yard's workflow, services, and requirements.
                   From booking systems to revenue tracking, we'll build exactly what you need.
@@ -391,58 +412,58 @@ export default function Home() {
 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
                   <div className="flex items-center gap-3 text-white">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/30">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                       </svg>
                     </div>
                     <div className="text-left">
-                      <p className="text-sm text-white/70">Visit Website</p>
+                      <p className="text-sm text-white/80">Visit Website</p>
                       <a
                         href="https://leeday.uk"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-semibold hover:underline"
+                        className="font-semibold hover:underline drop-shadow"
                       >
                         leeday.uk
                       </a>
                     </div>
                   </div>
 
-                  <div className="hidden sm:block w-px h-12 bg-white/30"></div>
+                  <div className="hidden sm:block w-px h-12 bg-white/40"></div>
 
                   <div className="flex items-center gap-3 text-white">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/30">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <div className="text-left">
-                      <p className="text-sm text-white/70">Email Us</p>
+                      <p className="text-sm text-white/80">Email Us</p>
                       <a
                         href="mailto:leedaydevs@gmail.com"
-                        className="font-semibold hover:underline"
+                        className="font-semibold hover:underline drop-shadow"
                       >
                         leedaydevs@gmail.com
                       </a>
                     </div>
                   </div>
 
-                  <div className="hidden sm:block w-px h-12 bg-white/30"></div>
+                  <div className="hidden sm:block w-px h-12 bg-white/40"></div>
 
                   <div className="flex items-center gap-3 text-white">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/30">
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                       </svg>
                     </div>
                     <div className="text-left">
-                      <p className="text-sm text-white/70">WhatsApp</p>
+                      <p className="text-sm text-white/80">WhatsApp</p>
                       <a
                         href="https://wa.me/447586266007"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-semibold hover:underline"
+                        className="font-semibold hover:underline drop-shadow"
                       >
                         07586 266007
                       </a>
@@ -450,11 +471,11 @@ export default function Home() {
                   </div>
                 </div>
 
-                <p className="text-white/60 text-sm mb-6">
+                <p className="text-white/70 text-sm mb-6 drop-shadow">
                   Built & maintained by LD Development
                 </p>
 
-                <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-3 text-white/80 text-sm max-w-md mx-auto">
+                <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-3 text-white/90 text-sm max-w-md mx-auto">
                   <div className="flex items-center gap-1.5">
                     <CheckCircle className="w-4 h-4 flex-shrink-0" />
                     <span>Tailored Solutions</span>
@@ -473,34 +494,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-20 px-4 bg-background overflow-hidden">
-        {/* Decorative Horseshoes */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.04]">
-          <svg className="absolute top-16 left-1/4 w-28 h-28 text-amber-500 rotate-45" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C7.58 2 4 5.58 4 10c0 1.5.5 3 1.2 4.2L4 22l2.5-1.5L8 22l1.5-1.5L11 22l1-2 1 2 1.5-1.5L16 22l1.5-1.5L20 22l-1.2-7.8c.7-1.2 1.2-2.7 1.2-4.2 0-4.42-3.58-8-8-8zm0 2c3.31 0 6 2.69 6 6 0 1-.3 2-.8 2.8l-.2.4.6 3.8-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6.6-3.8-.2-.4c-.5-.8-.8-1.8-.8-2.8 0-3.31 2.69-6 6-6z"/>
-          </svg>
-          <svg className="absolute bottom-20 right-1/4 w-24 h-24 text-amber-500 -rotate-30" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C7.58 2 4 5.58 4 10c0 1.5.5 3 1.2 4.2L4 22l2.5-1.5L8 22l1.5-1.5L11 22l1-2 1 2 1.5-1.5L16 22l1.5-1.5L20 22l-1.2-7.8c.7-1.2 1.2-2.7 1.2-4.2 0-4.42-3.58-8-8-8zm0 2c3.31 0 6 2.69 6 6 0 1-.3 2-.8 2.8l-.2.4.6 3.8-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6-1-.6-1 .6.6-3.8-.2-.4c-.5-.8-.8-1.8-.8-2.8 0-3.31 2.69-6 6-6z"/>
-          </svg>
-        </div>
-        <div className="container mx-auto max-w-4xl text-center relative">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">
-            Ready to Elevate Your Stable Management?
-          </h2>
-          <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-            Join My Stables today and experience premium equestrian management
-            designed for the modern stable yard.
-          </p>
-          <Button size="lg" className="bg-primary hover:bg-primary/90 font-heading text-base">
-            <Link href="/auth/register">Create Your Account</Link>
-          </Button>
-          <p className="text-sm text-muted-foreground mt-4">
-            Account activation requires admin approval
-          </p>
         </div>
       </section>
 

@@ -136,7 +136,7 @@ export default function PrivacyPolicyPage() {
               your stable administrator or reach out to us at:
             </p>
             <p className="font-semibold mt-4">
-              [Your Contact Email Address]
+              LeeDayDevs@gmail.com
             </p>
           </section>
         </div>

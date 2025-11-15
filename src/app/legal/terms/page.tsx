@@ -153,7 +153,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="font-serif text-2xl font-semibold mb-4">13. Governing Law</h2>
             <p>
-              These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction],
+              These Terms shall be governed by and construed in accordance with the laws of England and Wales,
               without regard to its conflict of law provisions.
             </p>
           </section>
@@ -164,7 +164,7 @@ export default function TermsOfServicePage() {
               For questions about these Terms, please contact your stable administrator or reach out to us at:
             </p>
             <p className="font-semibold mt-4">
-              [Your Contact Email Address]
+              LeeDayDevs@gmail.com
             </p>
           </section>
         </div>
