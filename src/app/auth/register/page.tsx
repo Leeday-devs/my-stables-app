@@ -44,6 +44,7 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/login`,
           data: {
             full_name: `${formData.firstName} ${formData.lastName}`,
             phone: formData.phone
