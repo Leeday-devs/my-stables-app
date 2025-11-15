@@ -454,15 +454,21 @@ export default function Home() {
                   Built & maintained by LD Development
                 </p>
 
-                <div className="inline-flex items-center gap-2 text-white/80 text-sm">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Tailored Solutions</span>
-                  <span className="mx-2">•</span>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Mobile-First Design</span>
-                  <span className="mx-2">•</span>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Ongoing Support</span>
+                <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-3 text-white/80 text-sm max-w-md mx-auto">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>Tailored Solutions</span>
+                  </div>
+                  <span className="hidden sm:inline">•</span>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>Mobile-First Design</span>
+                  </div>
+                  <span className="hidden sm:inline">•</span>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>Ongoing Support</span>
+                  </div>
                 </div>
               </div>
             </div>
