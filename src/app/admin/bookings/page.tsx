@@ -54,7 +54,7 @@ export default function BookingsPage() {
           booking_date,
           horse_name,
           user_id,
-          users!horse_care_bookings_user_id_fkey (full_name),
+          users (full_name),
           services (name, price)
         `)
         .eq('status', 'APPROVED')
@@ -70,7 +70,7 @@ export default function BookingsPage() {
           duration_minutes,
           price,
           user_id,
-          users!sand_school_bookings_user_id_fkey (full_name)
+          users (full_name)
         `)
         .eq('status', 'APPROVED')
         .order('booking_date', { ascending: false })
