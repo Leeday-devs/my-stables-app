@@ -12,10 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar, Clock, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react'
+import { Calendar, Clock, AlertCircle, Loader2, CheckCircle2, CalendarDays } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+import { SandSchoolCalendar } from '@/components/admin/SandSchoolCalendar'
 
 export default function SandSchoolBookingPage() {
   const [selectedDate, setSelectedDate] = useState('')
@@ -131,6 +132,26 @@ export default function SandSchoolBookingPage() {
         <p className="text-muted-foreground">
           Reserve sand school time slots (30 minutes or 1 hour).
         </p>
+      </div>
+
+      {/* Calendar View - Shows all bookings */}
+      <div className="mb-8">
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <CalendarDays className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold">View Current Bookings</h2>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Check which time slots are already booked before making your reservation.
+          </p>
+          <SandSchoolCalendar />
+        </Card>
+      </div>
+
+      {/* Booking Form Section */}
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold">Make a Booking</h2>
+        <p className="text-muted-foreground">Select your preferred date, duration, and time slot.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
