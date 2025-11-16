@@ -77,7 +77,6 @@ export default function BookingsPage() {
 
       // Transform horse care bookings
       const transformedHorseCare: HorseCareBooking[] = (horseCareData || []).map(booking => {
-        const endTime = calculateEndTime(booking.start_time || '09:00', booking.duration_minutes || 30)
         return {
           id: booking.id,
           user: booking.users?.full_name || 'Unknown User',
