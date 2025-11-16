@@ -1,3 +1,5 @@
+'use client'
+
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,10 +15,143 @@ import {
   Shield,
   ArrowLeft,
   Save,
-  Lock
+  Lock,
+  Loader2,
+  Clock
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
 export default function ProfilePage() {
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [userStatus, setUserStatus] = useState<'ACTIVE' | 'PENDING_APPROVAL' | 'SUSPENDED'>('PENDING_APPROVAL')
+  const [userRole, setUserRole] = useState('USER')
+  const [memberSince, setMemberSince] = useState('')
+  const { toast } = useToast()
+
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  const fetchProfile = async () => {
+    setLoading(true)
+    const supabase = createClient()
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      setUserEmail(user.email || '')
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('full_name, phone, status, role, created_at')
+        .eq('id', user.id)
+        .single()
+
+      if (userData) {
+        setFullName(userData.full_name || '')
+        const nameParts = (userData.full_name || '').split(' ')
+        setFirstName(nameParts[0] || '')
+        setLastName(nameParts.slice(1).join(' ') || '')
+        setPhone(userData.phone || '')
+        setUserStatus(userData.status)
+        setUserRole(userData.role)
+
+        // Format member since date
+        if (userData.created_at) {
+          const date = new Date(userData.created_at)
+          setMemberSince(date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }))
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to load profile data',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+
+    const supabase = createClient()
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const updatedFullName = `${firstName} ${lastName}`.trim()
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          full_name: updatedFullName,
+          phone: phone
+        })
+        .eq('id', user.id)
+
+      if (error) throw error
+
+      setFullName(updatedFullName)
+
+      toast({
+        title: 'Success',
+        description: 'Profile updated successfully'
+      })
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update profile',
+        variant: 'destructive'
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const getInitials = () => {
+    return fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'
+  }
+
+  const getStatusBadge = () => {
+    switch (userStatus) {
+      case 'ACTIVE':
+        return <Badge className="bg-green-100 text-green-700"><Shield className="h-3 w-3 mr-1" />Active Member</Badge>
+      case 'PENDING_APPROVAL':
+        return <Badge className="bg-orange-100 text-orange-700"><Clock className="h-3 w-3 mr-1" />Pending Approval</Badge>
+      case 'SUSPENDED':
+        return <Badge className="bg-red-100 text-red-700">Suspended</Badge>
+      default:
+        return <Badge>Unknown</Badge>
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-4 md:p-8">
+        <Card className="p-12">
+          <div className="flex flex-col items-center justify-center text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin mb-3" />
+            <p>Loading profile...</p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
   return (
     <div className="p-4 md:p-8">
       {/* Header */}
@@ -40,25 +175,24 @@ export default function ProfilePage() {
         <Card className="p-6 lg:col-span-1">
           <div className="text-center">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-secondary text-secondary-foreground font-bold text-3xl mx-auto mb-4">
-              SJ
+              {getInitials()}
             </div>
-            <h2 className="font-heading text-xl font-semibold mb-1">Sarah Johnson</h2>
-            <p className="text-sm text-muted-foreground mb-4">sarah.j@email.com</p>
-            <Badge className="bg-green-100 text-green-700 mb-4">
-              <Shield className="h-3 w-3 mr-1" />
-              Active Member
-            </Badge>
+            <h2 className="font-heading text-xl font-semibold mb-1">{fullName || 'User'}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{userEmail}</p>
+            <div className="mb-4">
+              {getStatusBadge()}
+            </div>
 
             <Separator className="my-4" />
 
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
-                <span>Member since Nov 2025</span>
+                <span>Member since {memberSince || 'N/A'}</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <User className="h-4 w-4" />
-                <span>Regular User</span>
+                <span>{userRole === 'ADMIN' ? 'Administrator' : 'Regular User'}</span>
               </div>
             </div>
           </div>
@@ -68,7 +202,7 @@ export default function ProfilePage() {
         <Card className="p-6 lg:col-span-2">
           <h2 className="font-heading text-xl font-semibold mb-6">Personal Information</h2>
 
-          <form className="space-y-6">
+          <form onSubmit={handleSave} className="space-y-6">
             {/* Name Fields */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -76,7 +210,9 @@ export default function ProfilePage() {
                 <Input
                   id="firstName"
                   type="text"
-                  defaultValue="Sarah"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
                 />
               </div>
 
@@ -85,7 +221,9 @@ export default function ProfilePage() {
                 <Input
                   id="lastName"
                   type="text"
-                  defaultValue="Johnson"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -99,9 +237,12 @@ export default function ProfilePage() {
                   id="email"
                   type="email"
                   className="pl-10"
-                  defaultValue="sarah.j@email.com"
+                  value={userEmail}
+                  disabled
+                  title="Email cannot be changed"
                 />
               </div>
+              <p className="text-xs text-muted-foreground">Email address cannot be changed</p>
             </div>
 
             <div className="space-y-2">
@@ -112,34 +253,10 @@ export default function ProfilePage() {
                   id="phone"
                   type="tel"
                   className="pl-10"
-                  defaultValue="07XXX XXXXXX"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="07XXX XXXXXX"
                 />
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Horses Section */}
-            <div>
-              <h3 className="font-heading text-lg font-semibold mb-4">My Horses</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Thunder</p>
-                    <p className="text-sm text-muted-foreground">Bay Gelding</p>
-                  </div>
-                  <Button variant="ghost" size="sm">Edit</Button>
-                </div>
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Spirit</p>
-                    <p className="text-sm text-muted-foreground">Grey Mare</p>
-                  </div>
-                  <Button variant="ghost" size="sm">Edit</Button>
-                </div>
-                <Button variant="outline" className="w-full" size="sm">
-                  + Add Horse
-                </Button>
               </div>
             </div>
 
@@ -147,11 +264,20 @@ export default function ProfilePage() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button className="flex-1">
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
+              <Button type="submit" className="flex-1" disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
               </Button>
-              <Button variant="outline" className="flex-1">
+              <Button type="button" variant="outline" className="flex-1" onClick={fetchProfile} disabled={saving}>
                 Cancel
               </Button>
             </div>

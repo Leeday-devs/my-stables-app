@@ -16,7 +16,8 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HorseHead } from '@/components/icons/HorseHead'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -31,10 +32,52 @@ export function UserNavbar() {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userName, setUserName] = useState('User')
+  const [userInitials, setUserInitials] = useState('U')
+  const [userStatus, setUserStatus] = useState('Member')
+  const [notificationCount, setNotificationCount] = useState(0)
 
-  const handleSignOut = () => {
-    // Clear any user session/auth data here if needed
-    // For now, just navigate to the landing page
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    const supabase = createClient()
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Fetch user profile
+      const { data: userData } = await supabase
+        .from('users')
+        .select('full_name, status')
+        .eq('id', user.id)
+        .single()
+
+      if (userData) {
+        setUserName(userData.full_name || 'User')
+
+        // Generate initials from name
+        const nameParts = (userData.full_name || 'U').split(' ')
+        const initials = nameParts.map(part => part[0]).join('').toUpperCase().slice(0, 2)
+        setUserInitials(initials)
+
+        // Set user status
+        setUserStatus(userData.status === 'ACTIVE' ? 'Active Member' : 'Pending Approval')
+      }
+
+      // Fetch unread notification count (placeholder - will need notifications table)
+      // For now, set to 0 as we don't have notifications implemented yet
+      setNotificationCount(0)
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+    }
+  }
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
     router.push('/')
   }
 
@@ -88,8 +131,8 @@ export function UserNavbar() {
                   >
                     <item.icon className="h-5 w-5" />
                     {item.name}
-                    {item.name === 'Notifications' && (
-                      <Badge className="ml-auto bg-red-500 text-white">3</Badge>
+                    {item.name === 'Notifications' && notificationCount > 0 && (
+                      <Badge className="ml-auto bg-red-500 text-white">{notificationCount}</Badge>
                     )}
                   </Link>
                 )
@@ -98,11 +141,11 @@ export function UserNavbar() {
             <div className="border-t border-primary-foreground/10 pt-4 mt-auto">
               <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/5 p-3 mb-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground font-semibold text-sm">
-                  SJ
+                  {userInitials}
                 </div>
                 <div className="flex-1 text-sm">
-                  <p className="font-medium">Sarah Johnson</p>
-                  <p className="text-xs text-primary-foreground/70">Active Member</p>
+                  <p className="font-medium">{userName}</p>
+                  <p className="text-xs text-primary-foreground/70">{userStatus}</p>
                 </div>
               </div>
               <Button
@@ -144,8 +187,8 @@ export function UserNavbar() {
               >
                 <item.icon className="h-5 w-5" />
                 {item.name}
-                {item.name === 'Notifications' && (
-                  <Badge className="ml-auto bg-red-500 text-white">3</Badge>
+                {item.name === 'Notifications' && notificationCount > 0 && (
+                  <Badge className="ml-auto bg-red-500 text-white">{notificationCount}</Badge>
                 )}
               </Link>
             )
@@ -156,11 +199,11 @@ export function UserNavbar() {
         <div className="border-t border-primary-foreground/10 p-4">
           <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/5 p-3 mb-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground font-semibold text-sm">
-              SJ
+              {userInitials}
             </div>
             <div className="flex-1 text-sm">
-              <p className="font-medium">Sarah Johnson</p>
-              <p className="text-xs text-primary-foreground/70">Active Member</p>
+              <p className="font-medium">{userName}</p>
+              <p className="text-xs text-primary-foreground/70">{userStatus}</p>
             </div>
           </div>
           <Button

@@ -1,3 +1,5 @@
+'use client'
+
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,25 +11,128 @@ import {
   AlertCircle,
   Sparkles,
   Plus,
-  Bell
+  Bell,
+  Loader2
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+
+interface Booking {
+  id: string
+  service: string
+  horse: string
+  date: string
+  time: string
+  status: 'PENDING' | 'APPROVED' | 'DENIED'
+}
 
 export default function UserDashboard() {
-  const upcomingBookings = [
-    { id: 1, service: 'Grooming', horse: 'Thunder', date: '2025-11-06', time: '10:00', status: 'APPROVED' },
-    { id: 2, service: 'Sand School', horse: 'N/A', date: '2025-11-08', time: '14:00', status: 'PENDING' },
-  ]
+  const [userName, setUserName] = useState('User')
+  const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    pending: 0,
+    approved: 0,
+    thisMonth: 0
+  })
 
-  const recentNotifications = [
-    { id: 1, message: 'Your grooming booking for Thunder has been approved by Lizzie', time: '2 hours ago', type: 'success' },
-    { id: 2, message: 'Welcome to My Stables! Your account has been activated', time: '1 day ago', type: 'info' },
-  ]
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    setLoading(true)
+    const supabase = createClient()
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Fetch user name
+      const { data: userData } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+
+      if (userData) {
+        const firstName = userData.full_name?.split(' ')[0] || 'User'
+        setUserName(firstName)
+      }
+
+      // Fetch horse care bookings
+      const { data: horseCareData } = await supabase
+        .from('horse_care_bookings')
+        .select(`
+          id,
+          booking_date,
+          status,
+          horse_name,
+          services (name, price)
+        `)
+        .eq('user_id', user.id)
+        .order('booking_date', { ascending: true })
+
+      // Fetch sand school bookings
+      const { data: sandSchoolData } = await supabase
+        .from('sand_school_bookings')
+        .select('id, booking_date, start_time, status, duration_minutes')
+        .eq('user_id', user.id)
+        .order('booking_date', { ascending: true })
+
+      // Transform and combine bookings
+      const horseCareBookings: Booking[] = (horseCareData || []).map(booking => ({
+        id: booking.id,
+        service: booking.services?.name || 'Horse Care',
+        horse: booking.horse_name,
+        date: booking.booking_date,
+        time: '09:00',
+        status: booking.status as 'PENDING' | 'APPROVED' | 'DENIED'
+      }))
+
+      const sandSchoolBookings: Booking[] = (sandSchoolData || []).map(booking => ({
+        id: booking.id,
+        service: `Sand School (${booking.duration_minutes}min)`,
+        horse: 'N/A',
+        date: booking.booking_date,
+        time: booking.start_time,
+        status: booking.status as 'PENDING' | 'APPROVED' | 'DENIED'
+      }))
+
+      const allBookings = [...horseCareBookings, ...sandSchoolBookings]
+
+      // Filter for upcoming bookings (future dates only)
+      const today = new Date().toISOString().split('T')[0]
+      const upcoming = allBookings
+        .filter(b => b.date >= today && (b.status === 'APPROVED' || b.status === 'PENDING'))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, 3)
+
+      setUpcomingBookings(upcoming)
+
+      // Calculate stats
+      const pending = allBookings.filter(b => b.status === 'PENDING').length
+      const approved = allBookings.filter(b => b.status === 'APPROVED').length
+
+      // This month bookings
+      const now = new Date()
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+      const thisMonth = allBookings.filter(b => b.date >= firstDayOfMonth && b.date <= lastDayOfMonth).length
+
+      setStats({ pending, approved, thisMonth })
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="p-4 md:p-8">
       {/* Welcome Header */}
       <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold mb-2">Welcome back, Sarah! 👋</h1>
+        <h1 className="font-serif text-3xl font-bold mb-2">Welcome back, {userName}! 👋</h1>
         <p className="text-muted-foreground">
           Manage your bookings and schedule your next visit to the stable.
         </p>
@@ -81,7 +186,7 @@ export default function UserDashboard() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold">1</p>
+              <p className="text-2xl font-bold">{loading ? '-' : stats.pending}</p>
             </div>
           </div>
         </Card>
@@ -93,7 +198,7 @@ export default function UserDashboard() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Approved</p>
-              <p className="text-2xl font-bold">5</p>
+              <p className="text-2xl font-bold">{loading ? '-' : stats.approved}</p>
             </div>
           </div>
         </Card>
@@ -105,7 +210,7 @@ export default function UserDashboard() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">This Month</p>
-              <p className="text-2xl font-bold">8</p>
+              <p className="text-2xl font-bold">{loading ? '-' : stats.thisMonth}</p>
             </div>
           </div>
         </Card>
@@ -156,36 +261,39 @@ export default function UserDashboard() {
           </div>
         </Card>
 
-        {/* Recent Notifications */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-heading text-xl font-semibold">Recent Notifications</h2>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/notifications">
-                <Bell className="h-4 w-4 mr-1" />
-                View All
-              </Link>
-            </Button>
+        {/* Quick Info */}
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/50">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-blue-600">
+              <Bell className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="font-heading text-lg font-semibold mb-1">Important Information</h2>
+              <p className="text-sm text-muted-foreground">
+                Everything you need to know about your bookings
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {recentNotifications.map((notification) => (
-              <div key={notification.id} className="flex gap-3 border-b pb-4 last:border-0">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                  notification.type === 'success' ? 'bg-green-100' : 'bg-blue-100'
-                }`}>
-                  {notification.type === 'success' ? (
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Bell className="h-4 w-4 text-blue-600" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">{notification.message}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
-                </div>
-              </div>
-            ))}
+          <div className="space-y-3">
+            <div className="p-3 bg-white rounded-lg border">
+              <p className="text-sm font-medium mb-1">Booking Approval</p>
+              <p className="text-xs text-muted-foreground">
+                All bookings require admin approval. You'll be notified once reviewed.
+              </p>
+            </div>
+            <div className="p-3 bg-white rounded-lg border">
+              <p className="text-sm font-medium mb-1">Sand School Hours</p>
+              <p className="text-xs text-muted-foreground">
+                Open daily from 8:00 AM to 6:00 PM. Book 30-minute or 1-hour slots.
+              </p>
+            </div>
+            <div className="p-3 bg-white rounded-lg border">
+              <p className="text-sm font-medium mb-1">Horse Care Services</p>
+              <p className="text-xs text-muted-foreground">
+                Grooming (£10) and Mucking Out (£10) services available daily.
+              </p>
+            </div>
           </div>
         </Card>
       </div>
