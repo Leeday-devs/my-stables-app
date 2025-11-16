@@ -210,20 +210,27 @@ export async function approveBooking(bookingId: string, bookingType: 'horse_care
   const supabase = await createClient()
 
   // Get current user (admin)
-  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
 
-  if (!currentUser) {
+  if (authError || !currentUser) {
+    console.error('Auth error in approveBooking:', authError)
     return { success: false, error: 'Not authenticated' }
   }
 
   // Check if current user is admin
-  const { data: adminUser } = await supabase
+  const { data: adminUser, error: userError } = await supabase
     .from('users')
     .select('role, status')
     .eq('id', currentUser.id)
     .single()
 
+  if (userError) {
+    console.error('Error fetching admin user:', userError)
+    return { success: false, error: `Database error: ${userError.message}` }
+  }
+
   if (!adminUser || adminUser.role !== 'ADMIN' || adminUser.status !== 'ACTIVE') {
+    console.error('Authorization failed:', { adminUser })
     return { success: false, error: 'Unauthorized' }
   }
 
@@ -275,20 +282,27 @@ export async function denyBooking(bookingId: string, bookingType: 'horse_care' |
   const supabase = await createClient()
 
   // Get current user (admin)
-  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
 
-  if (!currentUser) {
+  if (authError || !currentUser) {
+    console.error('Auth error in denyBooking:', authError)
     return { success: false, error: 'Not authenticated' }
   }
 
   // Check if current user is admin
-  const { data: adminUser } = await supabase
+  const { data: adminUser, error: userError } = await supabase
     .from('users')
     .select('role, status')
     .eq('id', currentUser.id)
     .single()
 
+  if (userError) {
+    console.error('Error fetching admin user:', userError)
+    return { success: false, error: `Database error: ${userError.message}` }
+  }
+
   if (!adminUser || adminUser.role !== 'ADMIN' || adminUser.status !== 'ACTIVE') {
+    console.error('Authorization failed:', { adminUser })
     return { success: false, error: 'Unauthorized' }
   }
 
