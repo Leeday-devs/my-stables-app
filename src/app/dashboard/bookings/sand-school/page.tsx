@@ -134,20 +134,6 @@ export default function SandSchoolBookingPage() {
         </p>
       </div>
 
-      {/* Calendar View - Shows all bookings */}
-      <div className="mb-8">
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <CalendarDays className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">View Current Bookings</h2>
-          </div>
-          <p className="text-muted-foreground mb-6">
-            Check which time slots are already booked before making your reservation.
-          </p>
-          <SandSchoolCalendar />
-        </Card>
-      </div>
-
       {/* Booking Form Section */}
       <div className="mb-4">
         <h2 className="text-2xl font-bold">Make a Booking</h2>
@@ -344,6 +330,20 @@ export default function SandSchoolBookingPage() {
             </ul>
           </Card>
         </div>
+      </div>
+
+      {/* Calendar View - Shows all bookings */}
+      <div className="mt-8">
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <CalendarDays className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold">View Current Bookings</h2>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Check which time slots are already booked by others.
+          </p>
+          <SandSchoolCalendar />
+        </Card>
       </div>
     </div>
   )
