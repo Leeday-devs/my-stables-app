@@ -20,10 +20,10 @@ import { useState } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
+  { name: 'My Bookings', href: '/dashboard/bookings', icon: Calendar },
   { name: 'Book Services', href: '/dashboard/bookings/horse-care', icon: Sparkles },
   { name: 'Book Sand School', href: '/dashboard/bookings/sand-school', icon: Calendar },
-  { name: 'My Bookings', href: '/dashboard/bookings', icon: Calendar },
-  { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
 ]
 
