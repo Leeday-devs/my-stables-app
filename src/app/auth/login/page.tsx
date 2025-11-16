@@ -44,14 +44,23 @@ export default function LoginPage() {
       }
 
       // Check user role to determine redirect
-      const { data: userData } = await supabase
+      const { data: userData, error: profileError } = await supabase
         .from('users')
         .select('role, status')
         .eq('id', data.user.id)
         .single()
 
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError)
+        setError(`Profile error: ${profileError.message}. Please contact support.`)
+        await supabase.auth.signOut()
+        setIsLoading(false)
+        return
+      }
+
       if (!userData) {
         setError('User profile not found. Please contact support.')
+        await supabase.auth.signOut()
         setIsLoading(false)
         return
       }
