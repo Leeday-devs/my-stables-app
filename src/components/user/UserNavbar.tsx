@@ -60,7 +60,7 @@ export function UserNavbar() {
 
         // Generate initials from name
         const nameParts = (userData.full_name || 'U').split(' ')
-        const initials = nameParts.map(part => part[0]).join('').toUpperCase().slice(0, 2)
+        const initials = nameParts.map((part: string) => part[0]).join('').toUpperCase().slice(0, 2)
         setUserInitials(initials)
 
         // Set user status

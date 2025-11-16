@@ -67,16 +67,19 @@ export default function MyBookingsPage() {
         .order('booking_date', { ascending: false })
 
       // Transform horse care bookings
-      const horseCareBookings: Booking[] = (horseCareData || []).map(booking => ({
-        id: booking.id,
-        service: booking.services?.name || 'Horse Care',
-        horse: booking.horse_name,
-        date: booking.booking_date,
-        time: '09:00', // Could be enhanced with actual time if stored
-        status: booking.status as 'PENDING' | 'APPROVED' | 'DENIED',
-        price: `£${booking.services?.price || 0}`,
-        type: 'horse_care' as const
-      }))
+      const horseCareBookings: Booking[] = (horseCareData || []).map((booking: any) => {
+        const service = Array.isArray(booking.services) ? booking.services[0] : booking.services
+        return {
+          id: booking.id,
+          service: service?.name || 'Horse Care',
+          horse: booking.horse_name,
+          date: booking.booking_date,
+          time: '09:00', // Could be enhanced with actual time if stored
+          status: booking.status as 'PENDING' | 'APPROVED' | 'DENIED',
+          price: `£${service?.price || 0}`,
+          type: 'horse_care' as const
+        }
+      })
 
       // Transform sand school bookings
       const sandSchoolBookings: Booking[] = (sandSchoolData || []).map(booking => ({

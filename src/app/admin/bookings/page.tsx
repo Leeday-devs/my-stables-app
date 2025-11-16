@@ -76,24 +76,27 @@ export default function BookingsPage() {
         .order('booking_date', { ascending: false })
 
       // Transform horse care bookings
-      const transformedHorseCare: HorseCareBooking[] = (horseCareData || []).map(booking => {
+      const transformedHorseCare: HorseCareBooking[] = (horseCareData || []).map((booking: any) => {
+        const user = Array.isArray(booking.users) ? booking.users[0] : booking.users
+        const service = Array.isArray(booking.services) ? booking.services[0] : booking.services
         return {
           id: booking.id,
-          user: booking.users?.full_name || 'Unknown User',
-          service: booking.services?.name || 'Horse Care',
+          user: user?.full_name || 'Unknown User',
+          service: service?.name || 'Horse Care',
           horse: booking.horse_name,
           date: booking.booking_date,
           time: '09:00', // Default time for horse care
-          price: `£${booking.services?.price || 0}`
+          price: `£${service?.price || 0}`
         }
       })
 
       // Transform sand school bookings
-      const transformedSandSchool: SandSchoolBooking[] = (sandSchoolData || []).map(booking => {
+      const transformedSandSchool: SandSchoolBooking[] = (sandSchoolData || []).map((booking: any) => {
+        const user = Array.isArray(booking.users) ? booking.users[0] : booking.users
         const endTime = calculateEndTime(booking.start_time, booking.duration_minutes)
         return {
           id: booking.id,
-          user: booking.users?.full_name || 'Unknown User',
+          user: user?.full_name || 'Unknown User',
           time: `${booking.start_time}-${endTime}`,
           date: booking.booking_date,
           price: `£${booking.price}`

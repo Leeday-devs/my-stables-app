@@ -81,14 +81,17 @@ export default function UserDashboard() {
         .order('booking_date', { ascending: true })
 
       // Transform and combine bookings
-      const horseCareBookings: Booking[] = (horseCareData || []).map(booking => ({
-        id: booking.id,
-        service: booking.services?.name || 'Horse Care',
-        horse: booking.horse_name,
-        date: booking.booking_date,
-        time: '09:00',
-        status: booking.status as 'PENDING' | 'APPROVED' | 'DENIED'
-      }))
+      const horseCareBookings: Booking[] = (horseCareData || []).map((booking: any) => {
+        const service = Array.isArray(booking.services) ? booking.services[0] : booking.services
+        return {
+          id: booking.id,
+          service: service?.name || 'Horse Care',
+          horse: booking.horse_name,
+          date: booking.booking_date,
+          time: '09:00',
+          status: booking.status as 'PENDING' | 'APPROVED' | 'DENIED'
+        }
+      })
 
       const sandSchoolBookings: Booking[] = (sandSchoolData || []).map(booking => ({
         id: booking.id,
