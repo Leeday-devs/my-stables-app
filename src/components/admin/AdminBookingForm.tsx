@@ -264,7 +264,7 @@ export function AdminBookingForm({ bookingType, onSuccess }: AdminBookingFormPro
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Customer Type Selection */}
         <div className="space-y-3">
@@ -472,7 +472,7 @@ export function AdminBookingForm({ bookingType, onSuccess }: AdminBookingFormPro
         )}
 
         {/* Submit Button */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button
             type="submit"
             className="flex-1"
@@ -495,6 +495,7 @@ export function AdminBookingForm({ bookingType, onSuccess }: AdminBookingFormPro
             variant="outline"
             onClick={resetForm}
             disabled={submitting}
+            className="sm:w-auto"
           >
             Clear Form
           </Button>
