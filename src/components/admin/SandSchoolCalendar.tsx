@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, Calendar, Clock, User } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { SandSchoolBooking, Yard } from '@/types'
 
@@ -15,9 +15,11 @@ interface CalendarBooking extends SandSchoolBooking {
 
 interface SandSchoolCalendarProps {
   yard: Yard
+  onSlotClick?: (date: string, time: string) => void
+  clickableSlots?: boolean
 }
 
-export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
+export function SandSchoolCalendar({ yard, onSlotClick, clickableSlots = false }: SandSchoolCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [bookings, setBookings] = useState<CalendarBooking[]>([])
   const [loading, setLoading] = useState(true)
@@ -172,20 +174,20 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
   }
 
   return (
-    <Card className="p-3 sm:p-6">
+    <Card className="p-3 sm:p-4 lg:p-6 w-full">
       {/* Header */}
-      <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
+      <div className="mb-4 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-            <h2 className="text-lg sm:text-2xl font-bold">{yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'} Sand School</h2>
+            <Calendar className="h-5 w-5 text-primary" />
+            <h2 className="text-lg sm:text-xl font-bold">{yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'} Sand School</h2>
           </div>
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
-            className="text-xs sm:text-sm"
+            className="text-xs"
           >
             {viewMode === 'day' ? 'Week View' : 'Day View'}
           </Button>
@@ -197,7 +199,7 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
             <Button variant="outline" size="sm" onClick={navigatePrevious} className="flex-1 sm:flex-none">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={navigateToday} className="flex-1 sm:flex-none">
+            <Button variant="outline" size="sm" onClick={navigateToday} className="flex-1 sm:flex-none text-xs">
               Today
             </Button>
             <Button variant="outline" size="sm" onClick={navigateNext} className="flex-1 sm:flex-none">
@@ -205,7 +207,7 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
             </Button>
           </div>
 
-          <div className="font-medium text-sm sm:text-base text-center sm:text-right">
+          <div className="font-medium text-xs sm:text-sm text-center sm:text-right">
             {viewMode === 'week'
               ? `${formatDate(weekDates[0])} - ${formatDate(weekDates[6])}`
               : formatDate(currentDate)
@@ -223,13 +225,13 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
 
       {/* Calendar Grid */}
       {!loading && (
-        <div className="overflow-x-auto -mx-3 sm:mx-0">
-          <div className={viewMode === 'week' ? 'min-w-[600px]' : ''}>
+        <div className="overflow-x-auto -mx-3 sm:mx-0 w-full">
+          <div className={viewMode === 'week' ? 'min-w-[650px]' : 'min-w-full'}>
             {/* Day Headers */}
-            <div className="grid gap-0.5 sm:gap-1 mb-2" style={{
-              gridTemplateColumns: viewMode === 'day' ? '60px 1fr' : `60px repeat(${weekDates.length}, 1fr)`
+            <div className="grid gap-0.5 mb-2" style={{
+              gridTemplateColumns: viewMode === 'day' ? '50px 1fr' : `50px repeat(${weekDates.length}, minmax(80px, 1fr))`
             }}>
-              <div className="text-xs sm:text-sm font-medium text-muted-foreground p-1 sm:p-2">Time</div>
+              <div className="text-[10px] sm:text-xs font-medium text-muted-foreground p-1 sm:p-2">Time</div>
               {weekDates.map((date, index) => (
                 <div
                   key={index}
@@ -239,14 +241,14 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
                       : 'bg-muted'
                   }`}
                 >
-                  <div className="text-xs sm:text-sm font-medium">
+                  <div className="text-[10px] sm:text-xs font-medium">
                     {date.toLocaleDateString('en-GB', { weekday: viewMode === 'day' ? 'long' : 'short' })}
                   </div>
-                  <div className="text-base sm:text-lg font-bold">
+                  <div className="text-sm sm:text-base font-bold">
                     {date.getDate()}
                   </div>
                   {viewMode === 'day' && (
-                    <div className="text-xs">
+                    <div className="text-[10px]">
                       {date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
                     </div>
                   )}
@@ -259,15 +261,15 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
               {timeSlots.map((time) => (
                 <div
                   key={time}
-                  className="grid gap-0.5 sm:gap-1 border-b last:border-b-0"
+                  className="grid gap-0.5 border-b last:border-b-0"
                   style={{
-                    gridTemplateColumns: viewMode === 'day' ? '60px 1fr' : `60px repeat(${weekDates.length}, 1fr)`
+                    gridTemplateColumns: viewMode === 'day' ? '50px 1fr' : `50px repeat(${weekDates.length}, minmax(80px, 1fr))`
                   }}
                 >
                   {/* Time Label */}
-                  <div className="text-xs text-muted-foreground p-1 sm:p-2 flex items-center justify-center border-r bg-muted/30">
-                    <Clock className="h-3 w-3 mr-0.5 sm:mr-1 hidden sm:inline" />
-                    <span className="text-[10px] sm:text-xs">{time}</span>
+                  <div className="text-xs text-muted-foreground p-1 flex items-center justify-center border-r bg-muted/30">
+                    <Clock className="h-2.5 w-2.5 mr-0.5 hidden sm:inline" />
+                    <span className="text-[10px]">{time}</span>
                   </div>
 
                   {/* Day Cells */}
@@ -275,6 +277,9 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
                     const booking = getBookingForSlot(date, time)
                     const isStart = booking && isBookingStart(booking, time)
                     const span = booking ? getBookingSpan(booking) : 0
+                    const dateStr = date.toISOString().split('T')[0]
+                    const isPastSlot = new Date(`${dateStr}T${time}`) < new Date()
+                    const isClickable = clickableSlots && !booking && !isPastSlot
 
                     // Skip rendering if this cell is part of a multi-slot booking but not the start
                     if (booking && !isStart) {
@@ -284,28 +289,40 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
                     return (
                       <div
                         key={dateIndex}
-                        className="border-r last:border-r-0 relative min-h-[50px] sm:min-h-[60px]"
+                        className={`border-r last:border-r-0 relative min-h-[45px] ${
+                          isClickable ? 'cursor-pointer hover:bg-primary/5 transition-colors' : ''
+                        }`}
                         style={isStart ? {
                           gridRow: `span ${span}`,
                         } : undefined}
+                        onClick={() => {
+                          if (isClickable && onSlotClick) {
+                            onSlotClick(dateStr, time)
+                          }
+                        }}
                       >
                         {isStart && booking && (
                           <div
-                            className={`absolute inset-0.5 sm:inset-1 rounded-md p-1 sm:p-2 border ${getStatusColor(booking.status)}`}
+                            className={`absolute inset-0.5 rounded-md p-1 border ${getStatusColor(booking.status)}`}
                           >
-                            <div className="text-[10px] sm:text-xs font-medium truncate">
+                            <div className="text-[10px] font-medium truncate">
                               {booking.user_name}
                             </div>
-                            <div className="text-[10px] sm:text-xs flex items-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
-                              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                            <div className="text-[9px] flex items-center gap-0.5 mt-0.5">
+                              <Clock className="h-2 w-2" />
                               <span className="truncate">{booking.start_time} ({booking.duration_minutes}m)</span>
                             </div>
                             <Badge
                               variant="secondary"
-                              className="text-[9px] sm:text-xs mt-0.5 sm:mt-1 h-4 sm:h-5 px-1 sm:px-2"
+                              className="text-[8px] mt-0.5 h-3.5 px-1"
                             >
                               {booking.status}
                             </Badge>
+                          </div>
+                        )}
+                        {isClickable && (
+                          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20 hover:text-primary/40 transition-colors pointer-events-none">
+                            <span className="text-lg font-light">+</span>
                           </div>
                         )}
                       </div>
@@ -319,19 +336,24 @@ export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
       )}
 
       {/* Legend */}
-      <div className="mt-4 flex items-center gap-3 sm:gap-4 flex-wrap text-xs sm:text-sm">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-green-100 border border-green-200" />
+      <div className="mt-4 flex items-center gap-3 flex-wrap text-xs">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-green-100 border border-green-200" />
           <span className="text-muted-foreground">Approved</span>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-yellow-100 border border-yellow-200" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-yellow-100 border border-yellow-200" />
           <span className="text-muted-foreground">Pending</span>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-red-100 border border-red-200" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-red-100 border border-red-200" />
           <span className="text-muted-foreground">Denied</span>
         </div>
+        {clickableSlots && (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <span className="text-muted-foreground">💡 Click empty slots to book</span>
+          </div>
+        )}
       </div>
     </Card>
   )

@@ -2,9 +2,15 @@
 
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -12,21 +18,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar, Clock, AlertCircle, Loader2, CheckCircle2, CalendarDays } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Calendar, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react'
+import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { SandSchoolCalendar } from '@/components/admin/SandSchoolCalendar'
 
 export default function SandSchoolBookingPage() {
   const [yard, setYard] = useState<'GREENACHERS' | 'MERYDOWN'>('GREENACHERS')
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState('')
-  const [duration, setDuration] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
-  const [availableSlots, setAvailableSlots] = useState<string[]>([])
-  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [duration, setDuration] = useState('30')
   const [submitting, setSubmitting] = useState(false)
-  const { toast} = useToast()
+  const [calendarKey, setCalendarKey] = useState(0)
+  const { toast } = useToast()
   const router = useRouter()
 
   const getPrice = () => {
@@ -35,46 +41,24 @@ export default function SandSchoolBookingPage() {
     return '-'
   }
 
-  // Fetch available time slots when date, duration, or yard changes
-  useEffect(() => {
-    if (selectedDate && duration) {
-      fetchAvailableSlots()
-    } else {
-      setAvailableSlots([])
-      setSelectedTime('')
-    }
-  }, [selectedDate, duration, yard])
-
-  const fetchAvailableSlots = async () => {
-    setLoadingSlots(true)
-    setSelectedTime('')
-
-    try {
-      const response = await fetch(
-        `/api/bookings/sand-school?date=${selectedDate}&duration=${duration}&yard=${yard}`
-      )
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch available slots')
-      }
-
-      const data = await response.json()
-      setAvailableSlots(data.availableSlots || [])
-    } catch (error) {
-      console.error('Error fetching slots:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load available time slots. Please try again.',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoadingSlots(false)
-    }
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSlotClick = (date: string, time: string) => {
+    setSelectedDate(date)
+    setSelectedTime(time)
+    setDuration('30') // Default to 30 minutes
+    setDialogOpen(true)
+  }
 
+  const handleSubmit = async () => {
     if (!selectedDate || !duration || !selectedTime) {
       toast({
         title: 'Missing Information',
@@ -111,6 +95,11 @@ export default function SandSchoolBookingPage() {
         description: 'Your sand school booking has been submitted for review.',
       })
 
+      setDialogOpen(false)
+
+      // Refresh calendar
+      setCalendarKey(prev => prev + 1)
+
       // Redirect to bookings page after a short delay
       setTimeout(() => {
         router.push('/dashboard/bookings')
@@ -128,239 +117,166 @@ export default function SandSchoolBookingPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold mb-2">Book Sand School</h1>
-        <p className="text-muted-foreground">
-          Reserve sand school time slots (30 minutes or 1 hour).
-        </p>
-      </div>
+    <div className="p-4 md:p-6 max-w-[1600px] mx-auto">
+      {/* Header with Yard Selection */}
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+          <div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold mb-1">Book Sand School</h1>
+            <p className="text-sm text-muted-foreground">
+              Click on any available time slot in the calendar to book
+            </p>
+          </div>
 
-      {/* Booking Form Section */}
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold">Make a Booking</h2>
-        <p className="text-muted-foreground">Select your preferred date, duration, and time slot.</p>
-      </div>
-
-      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-        {/* Booking Form */}
-        <div className="lg:col-span-2">
-          <Card className="p-4 sm:p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Yard Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="yard">Select Sand School *</Label>
-                <Select value={yard} onValueChange={(value: 'GREENACHERS' | 'MERYDOWN') => setYard(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose sand school" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GREENACHERS">Greenachers</SelectItem>
-                    <SelectItem value="MERYDOWN">Merydown</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Date Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="date">Select Date *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  required
-                />
-              </div>
-
-              {/* Duration Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration *</Label>
-                <Select value={duration} onValueChange={setDuration}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">
-                      <div className="flex items-center justify-between w-full">
-                        <span>30 minutes</span>
-                        <span className="ml-4 text-sm text-muted-foreground">£2.50</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="60">
-                      <div className="flex items-center justify-between w-full">
-                        <span>1 hour</span>
-                        <span className="ml-4 text-sm text-muted-foreground">£5.00</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Price Display */}
-              {duration && (
-                <Card className="p-4 bg-secondary/10 border-secondary/20">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">Total Price:</span>
-                    <span className="text-2xl font-bold text-secondary">{getPrice()}</span>
-                  </div>
-                </Card>
-              )}
-
-              {/* Available Time Slots */}
-              <div className="space-y-2">
-                <Label>Available Time Slots *</Label>
-
-                {!selectedDate || !duration ? (
-                  <div className="p-4 border rounded-lg text-center text-muted-foreground text-sm">
-                    Please select a date and duration to view available time slots
-                  </div>
-                ) : loadingSlots ? (
-                  <div className="p-8 border rounded-lg flex items-center justify-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-sm">Loading available slots...</span>
-                  </div>
-                ) : availableSlots.length === 0 ? (
-                  <div className="p-4 border rounded-lg text-center text-muted-foreground text-sm bg-red-50 border-red-200">
-                    <AlertCircle className="h-5 w-5 mx-auto mb-2 text-red-600" />
-                    No available time slots for this date and duration. Please try another date.
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg bg-muted/20">
-                      {availableSlots.map((slot) => (
-                        <Button
-                          key={slot}
-                          type="button"
-                          variant={selectedTime === slot ? 'default' : 'outline'}
-                          size="default"
-                          className="text-xs sm:text-sm h-10 sm:h-9 font-medium"
-                          onClick={() => setSelectedTime(slot)}
-                        >
-                          {selectedTime === slot && (
-                            <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                          )}
-                          {slot}
-                        </Button>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {availableSlots.length} slot{availableSlots.length !== 1 ? 's' : ''} available.
-                      Tap a time slot to select it.
-                    </p>
-                  </>
-                )}
-              </div>
-
-              {/* Important Notice */}
-              <Card className="p-4 bg-blue-50 border-blue-200">
-                <div className="flex gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm">
-                    <p className="font-medium text-blue-900">Approval Required</p>
-                    <p className="text-blue-700 mt-1">
-                      All sand school bookings require admin approval. You'll be notified once reviewed.
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Submit Button */}
-              <div className="flex gap-3">
-                <Button
-                  type="submit"
-                  className="flex-1"
-                  disabled={!selectedDate || !duration || !selectedTime || submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Submit Booking Request
-                    </>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => window.history.back()}
-                  disabled={submitting}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </Card>
+          {/* Yard Selection */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium">Select Arena:</span>
+            <Select value={yard} onValueChange={(value: 'GREENACHERS' | 'MERYDOWN') => setYard(value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Choose arena" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="GREENACHERS">Greenachers</SelectItem>
+                <SelectItem value="MERYDOWN">Merydown</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* Info Sidebar */}
-        <div className="space-y-4 sm:space-y-6">
-          <Card className="p-4 sm:p-6">
-            <h3 className="font-heading text-base sm:text-lg font-semibold mb-3 sm:mb-4">Pricing</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-4 border-b">
-                <div>
-                  <p className="font-medium">30 Minutes</p>
-                  <p className="text-sm text-muted-foreground">Half hour session</p>
-                </div>
-                <p className="text-xl font-bold text-secondary">£2.50</p>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">1 Hour</p>
-                  <p className="text-sm text-muted-foreground">Full hour session</p>
-                </div>
-                <p className="text-xl font-bold text-secondary">£5.00</p>
+        {/* Info Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+          <Card className="p-3 bg-blue-50 border-blue-200">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-xs">
+                <p className="font-medium text-blue-900">Approval Required</p>
+                <p className="text-blue-700">All bookings need admin approval</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 sm:p-6 bg-muted/30">
-            <h3 className="font-heading text-base sm:text-lg font-semibold mb-3">Sand School Info</h3>
-            <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                <span>Open daily from 8:00 AM to 6:00 PM</span>
-              </li>
-              <li className="flex gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                <span>30-minute and 1-hour slots available</span>
-              </li>
-              <li className="flex gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                <span>Real-time availability checking</span>
-              </li>
-              <li className="flex gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                <span>No double bookings - guaranteed</span>
-              </li>
-              <li className="flex gap-2">
-                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                <span>Instant booking confirmation</span>
-              </li>
-            </ul>
+          <Card className="p-3 bg-green-50 border-green-200">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-xs">
+                <p className="font-medium text-green-900">30 Minutes</p>
+                <p className="text-green-700">£2.50 per half hour session</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-3 bg-green-50 border-green-200">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-xs">
+                <p className="font-medium text-green-900">1 Hour</p>
+                <p className="text-green-700">£5.00 per full hour session</p>
+              </div>
+            </div>
           </Card>
         </div>
       </div>
 
-      {/* Calendar View - Shows all bookings */}
-      <div className="mt-6 sm:mt-8">
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-            <h2 className="text-lg sm:text-2xl font-bold">View Current Bookings - {yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'}</h2>
+      {/* Calendar - Main Focus */}
+      <SandSchoolCalendar
+        key={calendarKey}
+        yard={yard}
+        clickableSlots={true}
+        onSlotClick={handleSlotClick}
+      />
+
+      {/* Booking Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Booking</DialogTitle>
+            <DialogDescription>
+              Review your booking details and select duration
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Booking Details */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">Arena:</span>
+                <Badge variant="secondary">{yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'}</Badge>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">Date:</span>
+                <span className="text-sm">{selectedDate && formatDate(selectedDate)}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">Time:</span>
+                <span className="text-sm font-mono">{selectedTime}</span>
+              </div>
+            </div>
+
+            {/* Duration Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Duration</label>
+              <Select value={duration} onValueChange={setDuration}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30 minutes - £2.50</SelectItem>
+                  <SelectItem value="60">1 hour - £5.00</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Price Display */}
+            <Card className="p-4 bg-secondary/10 border-secondary/20">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Total Price:</span>
+                <span className="text-2xl font-bold text-secondary">{getPrice()}</span>
+              </div>
+            </Card>
+
+            {/* Important Notice */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex gap-2">
+                <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-xs">
+                  <p className="font-medium text-blue-900">Approval Required</p>
+                  <p className="text-blue-700 mt-0.5">
+                    Your booking will be reviewed by an administrator. You'll be notified once approved.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
-            Check which time slots are already booked at {yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'}.
-          </p>
-          <SandSchoolCalendar yard={yard} />
-        </Card>
-      </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Confirm Booking
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
