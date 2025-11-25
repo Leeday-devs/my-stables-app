@@ -77,6 +77,7 @@ export function SandSchoolCalendar({ yard, onSlotClick, clickableSlots = false }
         `)
         .in('booking_date', dates)
         .eq('yard', yard)
+        .in('status', ['PENDING', 'APPROVED'])
         .order('booking_date', { ascending: true })
         .order('start_time', { ascending: true })
 
