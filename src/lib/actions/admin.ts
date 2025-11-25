@@ -179,22 +179,25 @@ export async function getPendingBookings() {
     ...(horseCareBookings || []).map(booking => ({
       id: booking.id,
       type: 'horse_care' as const,
-      user: booking.user?.full_name || 'Unknown',
+      user: booking.is_walk_in ? `${booking.customer_name} (Walk-in)` : (booking.user?.full_name || 'Unknown'),
       service: booking.service?.name || 'Unknown Service',
       horse: booking.horse_name,
       date: booking.booking_date,
       price: `£${booking.service?.price || 0}`,
-      requestedAt: booking.requested_at
+      requestedAt: booking.requested_at,
+      isWalkIn: booking.is_walk_in || false
     })),
     ...(sandSchoolBookings || []).map(booking => ({
       id: booking.id,
       type: 'sand_school' as const,
-      user: booking.user?.full_name || 'Unknown',
-      service: 'Sand School',
+      user: booking.is_walk_in ? `${booking.customer_name} (Walk-in)` : (booking.user?.full_name || 'Unknown'),
+      service: `Sand School - ${booking.yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'}`,
       horse: 'N/A',
       date: booking.booking_date,
       price: `£${booking.price || 0}`,
-      requestedAt: booking.requested_at
+      requestedAt: booking.requested_at,
+      isWalkIn: booking.is_walk_in || false,
+      yard: booking.yard
     }))
   ]
 

@@ -28,10 +28,11 @@ export interface Service {
 
 // Booking types
 export type BookingStatus = 'PENDING' | 'APPROVED' | 'DENIED'
+export type Yard = 'GREENACHERS' | 'MERYDOWN'
 
 export interface HorseCareBooking {
   id: string
-  user_id: string
+  user_id: string | null  // null for walk-in customers
   horse_name: string
   service_id: string
   booking_date: string
@@ -40,6 +41,10 @@ export interface HorseCareBooking {
   reviewed_by: string | null
   reviewed_at: string | null
   review_notes: string | null
+  // Walk-in customer fields
+  customer_name: string | null
+  customer_phone: string | null
+  is_walk_in: boolean
   // Relations
   user?: User
   service?: Service
@@ -48,16 +53,21 @@ export interface HorseCareBooking {
 
 export interface SandSchoolBooking {
   id: string
-  user_id: string
+  user_id: string | null  // null for walk-in customers
   booking_date: string
   start_time: string
   duration_minutes: 30 | 60
   price: number
   status: BookingStatus
+  yard: Yard
   requested_at: string
   reviewed_by: string | null
   reviewed_at: string | null
   review_notes: string | null
+  // Walk-in customer fields
+  customer_name: string | null
+  customer_phone: string | null
+  is_walk_in: boolean
   // Relations
   user?: User
   reviewer?: User

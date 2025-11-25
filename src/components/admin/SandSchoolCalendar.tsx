@@ -6,18 +6,28 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, ChevronRight, Calendar, Clock, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { SandSchoolBooking } from '@/types'
+import { SandSchoolBooking, Yard } from '@/types'
 
 interface CalendarBooking extends SandSchoolBooking {
   user_email?: string
   user_name?: string
 }
 
-export function SandSchoolCalendar() {
+interface SandSchoolCalendarProps {
+  yard: Yard
+}
+
+export function SandSchoolCalendar({ yard }: SandSchoolCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [bookings, setBookings] = useState<CalendarBooking[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
+  // Default to day view on mobile, week view on desktop
+  const [viewMode, setViewMode] = useState<'day' | 'week'>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768 ? 'day' : 'week'
+    }
+    return 'week'
+  })
 
   // Time slots from 8:00 AM to 6:00 PM
   const timeSlots = Array.from({ length: 21 }, (_, i) => {
@@ -45,7 +55,7 @@ export function SandSchoolCalendar() {
   // Fetch bookings for the current week/day
   useEffect(() => {
     fetchBookings()
-  }, [currentDate, viewMode])
+  }, [currentDate, viewMode, yard])
 
   const fetchBookings = async () => {
     setLoading(true)
@@ -64,17 +74,22 @@ export function SandSchoolCalendar() {
           )
         `)
         .in('booking_date', dates)
+        .eq('yard', yard)
         .order('booking_date', { ascending: true })
         .order('start_time', { ascending: true })
 
       if (error) throw error
 
       // Transform data to include user info
-      const transformedBookings = data?.map(booking => ({
-        ...booking,
-        user_email: booking.users?.email,
-        user_name: booking.users?.full_name || 'Unknown User'
-      })) || []
+      const transformedBookings = data?.map((booking: any) => {
+        const user = Array.isArray(booking.users) ? booking.users[0] : booking.users
+        return {
+          ...booking,
+          user_email: user?.email,
+          // Show customer_name for walk-ins, otherwise show user name
+          user_name: booking.is_walk_in ? booking.customer_name : (user?.full_name || 'Unknown User')
+        }
+      }) || []
 
       setBookings(transformedBookings)
     } catch (error) {
@@ -157,41 +172,40 @@ export function SandSchoolCalendar() {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-3 sm:p-6">
       {/* Header */}
-      <div className="mb-6 space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Sand School Calendar</h2>
+            <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            <h2 className="text-lg sm:text-2xl font-bold">{yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'} Sand School</h2>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
-            >
-              {viewMode === 'day' ? 'Week View' : 'Day View'}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
+            className="text-xs sm:text-sm"
+          >
+            {viewMode === 'day' ? 'Week View' : 'Day View'}
+          </Button>
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={navigatePrevious}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 justify-center sm:justify-start">
+            <Button variant="outline" size="sm" onClick={navigatePrevious} className="flex-1 sm:flex-none">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={navigateToday}>
+            <Button variant="outline" size="sm" onClick={navigateToday} className="flex-1 sm:flex-none">
               Today
             </Button>
-            <Button variant="outline" size="sm" onClick={navigateNext}>
+            <Button variant="outline" size="sm" onClick={navigateNext} className="flex-1 sm:flex-none">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="font-medium">
+          <div className="font-medium text-sm sm:text-base text-center sm:text-right">
             {viewMode === 'week'
               ? `${formatDate(weekDates[0])} - ${formatDate(weekDates[6])}`
               : formatDate(currentDate)
@@ -209,46 +223,51 @@ export function SandSchoolCalendar() {
 
       {/* Calendar Grid */}
       {!loading && (
-        <div className="overflow-x-auto">
-          <div className="min-w-[600px]">
+        <div className="overflow-x-auto -mx-3 sm:mx-0">
+          <div className={viewMode === 'week' ? 'min-w-[600px]' : ''}>
             {/* Day Headers */}
-            <div className="grid gap-1 mb-2" style={{
-              gridTemplateColumns: `80px repeat(${weekDates.length}, 1fr)`
+            <div className="grid gap-0.5 sm:gap-1 mb-2" style={{
+              gridTemplateColumns: viewMode === 'day' ? '60px 1fr' : `60px repeat(${weekDates.length}, 1fr)`
             }}>
-              <div className="text-sm font-medium text-muted-foreground p-2">Time</div>
+              <div className="text-xs sm:text-sm font-medium text-muted-foreground p-1 sm:p-2">Time</div>
               {weekDates.map((date, index) => (
                 <div
                   key={index}
-                  className={`text-center p-2 rounded-t-lg ${
+                  className={`text-center p-1 sm:p-2 rounded-t-lg ${
                     date.toDateString() === new Date().toDateString()
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted'
                   }`}
                 >
-                  <div className="text-sm font-medium">
-                    {date.toLocaleDateString('en-GB', { weekday: 'short' })}
+                  <div className="text-xs sm:text-sm font-medium">
+                    {date.toLocaleDateString('en-GB', { weekday: viewMode === 'day' ? 'long' : 'short' })}
                   </div>
-                  <div className="text-lg font-bold">
+                  <div className="text-base sm:text-lg font-bold">
                     {date.getDate()}
                   </div>
+                  {viewMode === 'day' && (
+                    <div className="text-xs">
+                      {date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
 
             {/* Time Slots Grid */}
             <div className="border rounded-lg overflow-hidden">
-              {timeSlots.map((time, timeIndex) => (
+              {timeSlots.map((time) => (
                 <div
                   key={time}
-                  className="grid gap-1 border-b last:border-b-0"
+                  className="grid gap-0.5 sm:gap-1 border-b last:border-b-0"
                   style={{
-                    gridTemplateColumns: `80px repeat(${weekDates.length}, 1fr)`
+                    gridTemplateColumns: viewMode === 'day' ? '60px 1fr' : `60px repeat(${weekDates.length}, 1fr)`
                   }}
                 >
                   {/* Time Label */}
-                  <div className="text-xs text-muted-foreground p-2 flex items-center justify-center border-r bg-muted/30">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {time}
+                  <div className="text-xs text-muted-foreground p-1 sm:p-2 flex items-center justify-center border-r bg-muted/30">
+                    <Clock className="h-3 w-3 mr-0.5 sm:mr-1 hidden sm:inline" />
+                    <span className="text-[10px] sm:text-xs">{time}</span>
                   </div>
 
                   {/* Day Cells */}
@@ -265,25 +284,25 @@ export function SandSchoolCalendar() {
                     return (
                       <div
                         key={dateIndex}
-                        className="border-r last:border-r-0 relative min-h-[60px]"
+                        className="border-r last:border-r-0 relative min-h-[50px] sm:min-h-[60px]"
                         style={isStart ? {
                           gridRow: `span ${span}`,
                         } : undefined}
                       >
                         {isStart && booking && (
                           <div
-                            className={`absolute inset-1 rounded-md p-2 border ${getStatusColor(booking.status)}`}
+                            className={`absolute inset-0.5 sm:inset-1 rounded-md p-1 sm:p-2 border ${getStatusColor(booking.status)}`}
                           >
-                            <div className="text-xs font-medium truncate">
+                            <div className="text-[10px] sm:text-xs font-medium truncate">
                               {booking.user_name}
                             </div>
-                            <div className="text-xs flex items-center gap-1 mt-1">
-                              <Clock className="h-3 w-3" />
-                              {booking.start_time} ({booking.duration_minutes}min)
+                            <div className="text-[10px] sm:text-xs flex items-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
+                              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                              <span className="truncate">{booking.start_time} ({booking.duration_minutes}m)</span>
                             </div>
                             <Badge
                               variant="secondary"
-                              className="text-xs mt-1"
+                              className="text-[9px] sm:text-xs mt-0.5 sm:mt-1 h-4 sm:h-5 px-1 sm:px-2"
                             >
                               {booking.status}
                             </Badge>
@@ -300,17 +319,17 @@ export function SandSchoolCalendar() {
       )}
 
       {/* Legend */}
-      <div className="mt-4 flex items-center gap-4 flex-wrap text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-green-100 border border-green-200" />
+      <div className="mt-4 flex items-center gap-3 sm:gap-4 flex-wrap text-xs sm:text-sm">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-green-100 border border-green-200" />
           <span className="text-muted-foreground">Approved</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-yellow-100 border border-yellow-200" />
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-yellow-100 border border-yellow-200" />
           <span className="text-muted-foreground">Pending</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-red-100 border border-red-200" />
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-red-100 border border-red-200" />
           <span className="text-muted-foreground">Denied</span>
         </div>
       </div>

@@ -1,18 +1,18 @@
 'use client'
 
-import { SandSchoolCalendar } from '@/components/admin/SandSchoolCalendar'
+import { DualSandSchoolCalendar } from '@/components/admin/DualSandSchoolCalendar'
 
 export default function AdminSandSchoolPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold mb-2">Sand School Management</h1>
+        <h1 className="font-serif text-3xl font-bold mb-2">Sand School Calendars</h1>
         <p className="text-muted-foreground">
-          View and manage all sand school bookings in an interactive calendar.
+          View and manage bookings for both Greenachers and Merydown sand schools.
         </p>
       </div>
 
-      <SandSchoolCalendar />
+      <DualSandSchoolCalendar />
     </div>
   )
 }

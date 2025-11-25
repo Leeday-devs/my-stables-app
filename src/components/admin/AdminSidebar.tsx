@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   CalendarDays,
-  Sparkles
+  Sparkles,
+  UserPlus
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ import { useState } from 'react'
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
+  { name: 'Book Customer', href: '/admin/book-customer', icon: UserPlus },
   { name: 'Services', href: '/admin/services', icon: Sparkles },
   { name: 'Sand School', href: '/admin/sand-school', icon: CalendarDays },
   { name: 'Revenue', href: '/admin/revenue', icon: DollarSign },

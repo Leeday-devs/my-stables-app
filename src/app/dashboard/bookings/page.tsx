@@ -62,7 +62,7 @@ export default function MyBookingsPage() {
       // Fetch sand school bookings
       const { data: sandSchoolData } = await supabase
         .from('sand_school_bookings')
-        .select('id, booking_date, start_time, status, price, duration_minutes')
+        .select('id, booking_date, start_time, status, price, duration_minutes, yard')
         .eq('user_id', user.id)
         .order('booking_date', { ascending: false })
 
@@ -84,7 +84,7 @@ export default function MyBookingsPage() {
       // Transform sand school bookings
       const sandSchoolBookings: Booking[] = (sandSchoolData || []).map(booking => ({
         id: booking.id,
-        service: `Sand School (${booking.duration_minutes}min)`,
+        service: `Sand School - ${booking.yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'} (${booking.duration_minutes}min)`,
         horse: 'N/A',
         date: booking.booking_date,
         time: booking.start_time,

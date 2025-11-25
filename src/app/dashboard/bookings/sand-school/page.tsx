@@ -19,13 +19,14 @@ import { useRouter } from 'next/navigation'
 import { SandSchoolCalendar } from '@/components/admin/SandSchoolCalendar'
 
 export default function SandSchoolBookingPage() {
+  const [yard, setYard] = useState<'GREENACHERS' | 'MERYDOWN'>('GREENACHERS')
   const [selectedDate, setSelectedDate] = useState('')
   const [duration, setDuration] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const { toast } = useToast()
+  const { toast} = useToast()
   const router = useRouter()
 
   const getPrice = () => {
@@ -34,7 +35,7 @@ export default function SandSchoolBookingPage() {
     return '-'
   }
 
-  // Fetch available time slots when date or duration changes
+  // Fetch available time slots when date, duration, or yard changes
   useEffect(() => {
     if (selectedDate && duration) {
       fetchAvailableSlots()
@@ -42,7 +43,7 @@ export default function SandSchoolBookingPage() {
       setAvailableSlots([])
       setSelectedTime('')
     }
-  }, [selectedDate, duration])
+  }, [selectedDate, duration, yard])
 
   const fetchAvailableSlots = async () => {
     setLoadingSlots(true)
@@ -50,7 +51,7 @@ export default function SandSchoolBookingPage() {
 
     try {
       const response = await fetch(
-        `/api/bookings/sand-school?date=${selectedDate}&duration=${duration}`
+        `/api/bookings/sand-school?date=${selectedDate}&duration=${duration}&yard=${yard}`
       )
 
       if (!response.ok) {
@@ -95,6 +96,7 @@ export default function SandSchoolBookingPage() {
           date: selectedDate,
           startTime: selectedTime,
           duration: Number(duration),
+          yard: yard,
         }),
       })
 
@@ -140,11 +142,25 @@ export default function SandSchoolBookingPage() {
         <p className="text-muted-foreground">Select your preferred date, duration, and time slot.</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Booking Form */}
         <div className="lg:col-span-2">
-          <Card className="p-6">
+          <Card className="p-4 sm:p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Yard Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="yard">Select Sand School *</Label>
+                <Select value={yard} onValueChange={(value: 'GREENACHERS' | 'MERYDOWN') => setYard(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose sand school" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GREENACHERS">Greenachers</SelectItem>
+                    <SelectItem value="MERYDOWN">Merydown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Date Selection */}
               <div className="space-y-2">
                 <Label htmlFor="date">Select Date *</Label>
@@ -203,7 +219,7 @@ export default function SandSchoolBookingPage() {
                 ) : loadingSlots ? (
                   <div className="p-8 border rounded-lg flex items-center justify-center gap-2 text-muted-foreground">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Loading available slots...</span>
+                    <span className="text-sm">Loading available slots...</span>
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="p-4 border rounded-lg text-center text-muted-foreground text-sm bg-red-50 border-red-200">
@@ -212,18 +228,18 @@ export default function SandSchoolBookingPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg bg-muted/20">
                       {availableSlots.map((slot) => (
                         <Button
                           key={slot}
                           type="button"
                           variant={selectedTime === slot ? 'default' : 'outline'}
-                          size="sm"
-                          className="text-xs"
+                          size="default"
+                          className="text-xs sm:text-sm h-10 sm:h-9 font-medium"
                           onClick={() => setSelectedTime(slot)}
                         >
                           {selectedTime === slot && (
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                           )}
                           {slot}
                         </Button>
@@ -231,7 +247,7 @@ export default function SandSchoolBookingPage() {
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {availableSlots.length} slot{availableSlots.length !== 1 ? 's' : ''} available.
-                      Click a time slot to select it.
+                      Tap a time slot to select it.
                     </p>
                   </>
                 )}
@@ -283,9 +299,9 @@ export default function SandSchoolBookingPage() {
         </div>
 
         {/* Info Sidebar */}
-        <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="font-heading text-lg font-semibold mb-4">Pricing</h3>
+        <div className="space-y-4 sm:space-y-6">
+          <Card className="p-4 sm:p-6">
+            <h3 className="font-heading text-base sm:text-lg font-semibold mb-3 sm:mb-4">Pricing</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-4 border-b">
                 <div>
@@ -304,9 +320,9 @@ export default function SandSchoolBookingPage() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-muted/30">
-            <h3 className="font-heading text-lg font-semibold mb-3">Sand School Info</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+          <Card className="p-4 sm:p-6 bg-muted/30">
+            <h3 className="font-heading text-base sm:text-lg font-semibold mb-3">Sand School Info</h3>
+            <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                 <span>Open daily from 8:00 AM to 6:00 PM</span>
@@ -333,16 +349,16 @@ export default function SandSchoolBookingPage() {
       </div>
 
       {/* Calendar View - Shows all bookings */}
-      <div className="mt-8">
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <CalendarDays className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">View Current Bookings</h2>
+      <div className="mt-6 sm:mt-8">
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <CalendarDays className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            <h2 className="text-lg sm:text-2xl font-bold">View Current Bookings - {yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'}</h2>
           </div>
-          <p className="text-muted-foreground mb-6">
-            Check which time slots are already booked by others.
+          <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+            Check which time slots are already booked at {yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown'}.
           </p>
-          <SandSchoolCalendar />
+          <SandSchoolCalendar yard={yard} />
         </Card>
       </div>
     </div>

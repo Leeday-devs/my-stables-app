@@ -22,6 +22,7 @@ interface HorseCareBooking {
   date: string
   time: string
   price: string
+  isWalkIn: boolean
 }
 
 interface SandSchoolBooking {
@@ -30,6 +31,8 @@ interface SandSchoolBooking {
   time: string
   date: string
   price: string
+  yard: string
+  isWalkIn: boolean
 }
 
 export default function BookingsPage() {
@@ -54,6 +57,8 @@ export default function BookingsPage() {
           booking_date,
           horse_name,
           user_id,
+          is_walk_in,
+          customer_name,
           users (full_name),
           services (name, price)
         `)
@@ -69,7 +74,10 @@ export default function BookingsPage() {
           start_time,
           duration_minutes,
           price,
+          yard,
           user_id,
+          is_walk_in,
+          customer_name,
           users (full_name)
         `)
         .eq('status', 'APPROVED')
@@ -81,12 +89,13 @@ export default function BookingsPage() {
         const service = Array.isArray(booking.services) ? booking.services[0] : booking.services
         return {
           id: booking.id,
-          user: user?.full_name || 'Unknown User',
+          user: booking.is_walk_in ? `${booking.customer_name} (Walk-in)` : (user?.full_name || 'Unknown User'),
           service: service?.name || 'Horse Care',
           horse: booking.horse_name,
           date: booking.booking_date,
           time: '09:00', // Default time for horse care
-          price: `£${service?.price || 0}`
+          price: `£${service?.price || 0}`,
+          isWalkIn: booking.is_walk_in || false
         }
       })
 
@@ -96,10 +105,12 @@ export default function BookingsPage() {
         const endTime = calculateEndTime(booking.start_time, booking.duration_minutes)
         return {
           id: booking.id,
-          user: user?.full_name || 'Unknown User',
+          user: booking.is_walk_in ? `${booking.customer_name} (Walk-in)` : (user?.full_name || 'Unknown User'),
           time: `${booking.start_time}-${endTime}`,
           date: booking.booking_date,
-          price: `£${booking.price}`
+          price: `£${booking.price}`,
+          yard: booking.yard === 'GREENACHERS' ? 'Greenachers' : 'Merydown',
+          isWalkIn: booking.is_walk_in || false
         }
       })
 
@@ -194,6 +205,7 @@ export default function BookingsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>User</TableHead>
+                      <TableHead>Yard</TableHead>
                       <TableHead>Time Slot</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Price</TableHead>
@@ -203,6 +215,9 @@ export default function BookingsPage() {
                     {sandSchoolBookings.map((booking) => (
                       <TableRow key={booking.id}>
                         <TableCell className="font-medium">{booking.user}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{booking.yard}</Badge>
+                        </TableCell>
                         <TableCell>{booking.time}</TableCell>
                         <TableCell>{booking.date}</TableCell>
                         <TableCell>{booking.price}</TableCell>

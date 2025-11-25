@@ -109,11 +109,11 @@ export default function HorseCareBookingPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Booking Form */}
         <div className="lg:col-span-2">
-          <Card className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className="p-4 sm:p-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Service Selection */}
               <div className="space-y-2">
                 <Label htmlFor="service">Select Service *</Label>
@@ -249,9 +249,9 @@ export default function HorseCareBookingPage() {
         </div>
 
         {/* Services Info */}
-        <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="font-heading text-lg font-semibold mb-4">Available Services</h3>
+        <div className="space-y-4 sm:space-y-6">
+          <Card className="p-4 sm:p-6">
+            <h3 className="font-heading text-base sm:text-lg font-semibold mb-3 sm:mb-4">Available Services</h3>
             {isLoadingServices ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -283,9 +283,9 @@ export default function HorseCareBookingPage() {
             )}
           </Card>
 
-          <Card className="p-6 bg-muted/30">
-            <h3 className="font-heading text-lg font-semibold mb-3">How it Works</h3>
-            <ol className="space-y-3 text-sm">
+          <Card className="p-4 sm:p-6 bg-muted/30">
+            <h3 className="font-heading text-base sm:text-lg font-semibold mb-3">How it Works</h3>
+            <ol className="space-y-3 text-xs sm:text-sm">
               <li className="flex gap-2">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold flex-shrink-0">
                   1

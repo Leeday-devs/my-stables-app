@@ -16,12 +16,12 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json()
-    const { date, startTime, duration } = body
+    const { date, startTime, duration, yard } = body
 
     // Validate required fields
-    if (!date || !startTime || !duration) {
+    if (!date || !startTime || !duration || !yard) {
       return NextResponse.json(
-        { error: 'Missing required fields: date, startTime, and duration are required' },
+        { error: 'Missing required fields: date, startTime, duration, and yard are required' },
         { status: 400 }
       )
     }
@@ -52,6 +52,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate yard (must be GREENACHERS or MERYDOWN)
+    if (!['GREENACHERS', 'MERYDOWN'].includes(yard)) {
+      return NextResponse.json(
+        { error: 'Invalid yard. Must be GREENACHERS or MERYDOWN' },
+        { status: 400 }
+      )
+    }
+
     // Validate date is not in the past
     const bookingDate = new Date(`${date}T${startTime}`)
     const now = new Date()
@@ -67,11 +75,12 @@ export async function POST(request: NextRequest) {
       .toTimeString()
       .substring(0, 5)
 
-    // Check for conflicting bookings
+    // Check for conflicting bookings (only for the same yard)
     const { data: conflicts, error: conflictError } = await supabase
       .from('sand_school_bookings')
       .select('id, start_time, duration_minutes, status')
       .eq('booking_date', date)
+      .eq('yard', yard)
       .neq('status', 'DENIED')
       .gte('start_time', startTime)
       .lte('start_time', endTime)
@@ -126,7 +135,8 @@ export async function POST(request: NextRequest) {
         start_time: startTime,
         duration_minutes: Number(duration),
         price,
-        status: 'PENDING'
+        status: 'PENDING',
+        yard
       })
       .select('*')
       .single()
@@ -193,6 +203,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
     const duration = searchParams.get('duration') || '30'
+    const yard = searchParams.get('yard')
 
     if (!date) {
       return NextResponse.json(
@@ -201,11 +212,27 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch all bookings for this date (excluding denied bookings)
+    if (!yard) {
+      return NextResponse.json(
+        { error: 'Missing required parameter: yard' },
+        { status: 400 }
+      )
+    }
+
+    // Validate yard (must be GREENACHERS or MERYDOWN)
+    if (!['GREENACHERS', 'MERYDOWN'].includes(yard)) {
+      return NextResponse.json(
+        { error: 'Invalid yard. Must be GREENACHERS or MERYDOWN' },
+        { status: 400 }
+      )
+    }
+
+    // Fetch all bookings for this date and yard (excluding denied bookings)
     const { data: bookings, error: fetchError } = await supabase
       .from('sand_school_bookings')
       .select('start_time, duration_minutes')
       .eq('booking_date', date)
+      .eq('yard', yard)
       .in('status', ['PENDING', 'APPROVED'])
       .order('start_time', { ascending: true })
 
@@ -260,6 +287,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       date,
       duration: Number(duration),
+      yard,
       availableSlots,
       bookedSlots: bookings?.map(b => ({
         startTime: b.start_time,
